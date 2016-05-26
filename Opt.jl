@@ -1,4 +1,7 @@
-module LSO
+#
+# Module for optimization algorithms
+#
+module Opt
 	
 	export helloworld
 	
