@@ -1,14 +1,20 @@
-# set paths
-push!(LOAD_PATH, pwd()*"/mod")
-push!(LOAD_PATH, pwd()*"/tst")
+
+# import all modules from a given directory relative to working directory
+function import_localdir(dir::AbstractString)
+   push!(LOAD_PATH, pwd()*"/"*dir)
+   for filename in readdir(dir)
+       if endswith(filename, ".jl")
+            eval(Expr(:import, symbol(replace(filename, ".jl", "")))) # metaprogramming: import <filename>
+            println("Imported $(replace(filename, ".jl", "")).")
+       end
+    end
+end
 
 # import modules
-import Opt
-import Obj
+@everywhere import_localdir("mod")
+import_localdir("tst")
 
-# import test modules and run tests
-import OptTst.tst
-import ObjTst.tst
+# run tests
 println("")
 OptTst.tst()
 ObjTst.tst()
