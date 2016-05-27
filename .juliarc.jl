@@ -1,33 +1,20 @@
-# imports all modules from a given directory
-function importdir(dir::AbstractString)
-	push!(LOAD_PATH, pwd()*"/"*dir)
-	for filename in readdir(dir)
-		if endswith(filename, ".jl")
-			:(@everywhere import replace(filename, ".jl", "")) # filename without ".jl"
-			println("Imported $(replace(filename, ".jl", "")) everywhere.")
-		end
-	end
-end
-
-# includes all julia files from a given directory
-function includedir(dir::AbstractString)
-    for filename in readdir(dir)
-        if endswith(filename, ".jl")
-            include(dir*"/"*filename) # concat
-            println("Included $(dir*"/"*filename).")
-        end
-    end
-end
+# set paths
+push!(LOAD_PATH, pwd()*"/mod")
+push!(LOAD_PATH, pwd()*"/tst")
 
 # import modules
-importdir("mod")
+import Opt
+import Obj
 
-# perform tests
-println("\nTesting...")
-srand(1337)
-includedir("tst")
+# import test modules and run tests
+import OptTst.tst
+import ObjTst.tst
+println("")
+OptTst.tst()
+ObjTst.tst()
 
 # reset rng seed
 srand(1337)
 
-println("Done.")
+
+return true
