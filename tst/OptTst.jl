@@ -60,19 +60,47 @@ end
 
 
 """
-    tst_gd_bt([maxiter])
+    tst_gd_bt_rosenbrock([maxiter])
 
     Test Opt.gd_bt() with the Rosenbrock function
 """
-function tst_gd_bt(maxiter=10000)
+function tst_gd_bt_rosenbrock(maxiter=10000)
     # init rosenbrock function
     f(w) = 100*(w[2]-w[1]^2)^2 + (1-w[1])^2
     function g(w)
         g2 = 200*(w[2]-w[1]^2)
         return [-2*(w[1]*g2 + (1-w[1])), g2]
     end
+    # tst
     w = zeros(2)
     Opt.gd_bt(f, g, w, maxiter=maxiter)
+end
+
+
+
+"""
+    tst_gd_bt_rand([; maxiter, n, m])
+
+    Test Opt.gd_bt() with random data
+"""
+function tst_gd_bt_rand(maxiter=1000; n=1000, m=10000)
+    # init random data
+    w_true = randn(n)
+    X = randn(m,n)
+    y = X*w_true
+    f(w) = Obj.lr_f(w, X, y)
+    g(w) = Obj.lr_g(w, X, y)
+
+    # tst
+    w0 = randn(n)
+    w, opt, iter = Opt.gd_bt(f, g, w0, maxiter=maxiter)
+
+    # assert
+    if (isapprox(w, w_true, atol=.333))
+        println("tst_gd_bt SUCCEEDED: Found true w in $iter steps (Optimality $opt)")
+    else
+        println("tst_gd_bt FAILED: Did not find true w in $iter steps (Optimality $opt).\n     w = $w\nw_true = $w_true")
+    end
 end
 
 
