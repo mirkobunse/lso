@@ -6,6 +6,9 @@ module OptTst
 using Base.Test
 using Gadfly
 using Colors
+using MAT
+using Images
+using ImageView
 
 import Opt
 import Obj
@@ -92,7 +95,6 @@ function tst_gd_bt_rosenbrock(maxiter=1000000)
 end
 
 
-
 """
     tst_gd_bt_rand([; maxiter, n, m])
 
@@ -121,6 +123,39 @@ function tst_gd_bt_rand(maxiter=1000; n=1000, m=10000)
         println("tst_gd_bt FAILED: Did not find true w in $iter steps (Optimality $opt).\nw = $w\nw_true = $w_true")
     end
 
+    return infarr
+end
+
+
+"""
+    Show a row of the MNIST data matrix as image
+"""
+view_mnist(example) = ImageView.view(grayim(convert( Image{Gray}, reshape(example, (28,28)) )), xy=["y","x"])
+
+
+"""
+    tst_gd_bt_mnist()
+
+    Test Opt.gd_bt(...) with Logistic Regression on MNIST data.
+"""
+function tst_gd_bt_mnist(maxiter=1000)
+    # read data
+    file = matopen("data/mnist.mat")
+    X = full(read(file, "X"))
+    y = full(read(file, "y"))[:]
+
+    # prepare objective function
+    f(w) = Obj.lr_f(w, X, y)
+    g(w) = Obj.lr_g(w, X, y)
+
+    # tst
+    w0 = randn(784)
+    @time infarr = Opt.gd_bt(f, g, w0, maxiter=maxiter)
+    w = infarr[end].w
+    iter = infarr[end].iter
+    opt = infarr[end].opt
+
+    view_mnist(w)
     return infarr
 end
 
