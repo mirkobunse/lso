@@ -4,6 +4,9 @@
 module OptTst
 
 using Base.Test
+using Gadfly
+using Colors
+
 import Opt
 import Obj
 
@@ -18,6 +21,18 @@ function tst()
     @test tst_ls_bt()
     println("")
 end
+
+
+"""
+    plot_infarr(infarr [, ylabel])
+
+    Plot development of optimality in IterInfo array.
+"""
+function plot_infarr(infarr, ylabel="Optimality ‖∇f(x)‖∞")
+    opts = [info.opt for info in infarr]
+    plot(x=1:length(opts), y=opts, Scale.y_log, Geom.line, Guide.xlabel("Iteration"), Guide.ylabel(ylabel))
+end
+
 
 
 """
@@ -93,14 +108,20 @@ function tst_gd_bt_rand(maxiter=1000; n=1000, m=10000)
 
     # tst
     w0 = randn(n)
-    w, opt, iter = Opt.gd_bt(f, g, w0, maxiter=maxiter)
+    infarr = Opt.gd_bt(f, g, w0, maxiter=maxiter)
+    w = infarr[end].w
+    iter = infarr[end].iter
+    opt = infarr[end].opt
 
     # assert
-    if (isapprox(w, w_true, atol=.333))
+    success = isapprox(w, w_true, atol=.333)
+    if (success)
         println("tst_gd_bt SUCCEEDED: Found true w in $iter steps (Optimality $opt)")
     else
         println("tst_gd_bt FAILED: Did not find true w in $iter steps (Optimality $opt).\n     w = $w\nw_true = $w_true")
     end
+
+    return infarr
 end
 
 

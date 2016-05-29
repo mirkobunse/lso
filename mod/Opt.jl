@@ -7,6 +7,17 @@ module Opt
 # export ...
 
 
+const printiter = 5 # when iter%printiter == 0, print iteration info
+
+
+type IterInfo
+    w::Array{Float64, 1}
+    opt::Float64
+    iter::Integer
+    lsiter::Integer
+end
+
+
 """
     ls_bt(f, g, w, s [, c, α0, η; maxiter])
 
@@ -32,28 +43,44 @@ end
 """
     gd_bt(f, g, w [, ϵ, c, α0, η; maxiter, maxbtiter])
 
-    Performs Steepest Descent with Backtracking Line Search.
+    Performs Steepest Descent with Backtracking Line Search. Returns array
+    of IterInfo.
 
     Function f and its gradient g should only depend on the argument w.
     The parameter w is used as initial point.
 """
 function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α0=1, η=0.5; maxiter=1000, maxbtiter=20)
+    infarr::Array{IterInfo, 1} = []
+
+    # print info header
     headline = @sprintf "%6s | %3s | %9s | %9s"  "k" "i" "f" "opt"
     println(headline, "\n", repeat("-", length(headline)))
+
+    # optimization
     lsiter = 0
-    opt = Inf
     for k = 1:maxiter
+
+        # obtain opt, push info to array
         opt = vecnorm(g(w), Inf)
-        println(@sprintf "%6d | %3d | %9.3e | %9.3e"  k-1 lsiter f(w) opt)
+        push!(infarr, IterInfo(w, opt, k-1, lsiter))
+
+        # print info
+        if (k-1)%printiter == 0
+            println(@sprintf "%6d | %3d | %9.3e | %9.3e"  k-1 lsiter f(w) opt)
+        end 
+
+        # take step or stop
         if opt < ϵ # stopping criterion satisfied?
-            return w, opt, k-1
+            break
         else
             s = -g(w)
             α, lsiter = ls_bt(f, g, w, s, c, α0, η, maxiter=maxbtiter)
             w += α*s
         end
-    end
-    return w, opt, maxiter
+
+    end # end of optimization
+
+    return infarr
 end
 
 

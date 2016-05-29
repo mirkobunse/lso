@@ -10,8 +10,23 @@ function import_localdir(dir::AbstractString)
     end
 end
 
+function reload()
+    reload_localdir("mod")
+    reload_localdir("tst")
+end
+reload(name::AbstractString) = Base.reload(name)
+
+function reload_localdir(dir::AbstractString)
+    for filename in readdir(dir)
+       if endswith(filename, ".jl")
+            reload(replace(filename, ".jl", ""))
+       end
+    end
+end
+
 # import modules
-@everywhere import_localdir("mod")
+println("Importing modules...")
+import_localdir("mod")
 import_localdir("tst")
 
 # run tests
