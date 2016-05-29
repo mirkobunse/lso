@@ -114,11 +114,11 @@ function tst_gd_bt_rand(maxiter=1000; n=1000, m=10000)
     opt = infarr[end].opt
 
     # assert
-    success = isapprox(w, w_true, atol=.333)
+    success = isapprox(w, w_true, atol=1e-4)
     if (success)
         println("tst_gd_bt SUCCEEDED: Found true w in $iter steps (Optimality $opt)")
     else
-        println("tst_gd_bt FAILED: Did not find true w in $iter steps (Optimality $opt).\n     w = $w\nw_true = $w_true")
+        println("tst_gd_bt FAILED: Did not find true w in $iter steps (Optimality $opt).\nw = $w\nw_true = $w_true")
     end
 
     return infarr
