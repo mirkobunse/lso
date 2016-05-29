@@ -24,11 +24,11 @@ end
 
 
 """
-    plot_infarr(infarr [, ylabel])
+    plotinf(infarr [, ylabel])
 
     Plot development of optimality in IterInfo array.
 """
-function plot_infarr(infarr, ylabel="Optimality ‖∇f(x)‖∞")
+function plotinf(infarr, ylabel="Optimality ‖∇f(x)‖∞")
     opts = [info.opt for info in infarr]
     plot(x=1:length(opts), y=opts, Scale.y_log, Geom.line, Guide.xlabel("Iteration"), Guide.ylabel(ylabel))
 end
@@ -79,7 +79,7 @@ end
 
     Test Opt.gd_bt() with the Rosenbrock function
 """
-function tst_gd_bt_rosenbrock(maxiter=10000)
+function tst_gd_bt_rosenbrock(maxiter=1000000)
     # init rosenbrock function
     f(w) = 100*(w[2]-w[1]^2)^2 + (1-w[1])^2
     function g(w)
@@ -88,7 +88,7 @@ function tst_gd_bt_rosenbrock(maxiter=10000)
     end
     # tst
     w = zeros(2)
-    Opt.gd_bt(f, g, w, maxiter=maxiter)
+    @time Opt.gd_bt(f, g, w, maxiter=maxiter, printiter=10000)
 end
 
 
@@ -108,7 +108,7 @@ function tst_gd_bt_rand(maxiter=1000; n=1000, m=10000)
 
     # tst
     w0 = randn(n)
-    infarr = Opt.gd_bt(f, g, w0, maxiter=maxiter)
+    @time infarr = Opt.gd_bt(f, g, w0, maxiter=maxiter)
     w = infarr[end].w
     iter = infarr[end].iter
     opt = infarr[end].opt
