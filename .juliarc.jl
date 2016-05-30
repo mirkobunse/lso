@@ -13,6 +13,7 @@ end
 function reload()
     reload_localdir("mod")
     reload_localdir("tst")
+    reload_localdir("eval")
 end
 reload(name::AbstractString) = Base.reload(name)
 
@@ -28,6 +29,7 @@ end
 println("Importing modules...")
 import_localdir("mod")
 import_localdir("tst")
+import_localdir("eval")
 
 # run tests
 println("")
