@@ -1,48 +1,39 @@
 #
 # Module for optimization algorithms
 #
-module Opt
+module GD
 
 
 # export ...
 
-
-const printiter = 1 # when iter%printiter == 0, print iteration info
-
-
-type IterInfo
-    w::Array{Float64, 1}
-    opt::Float64
-    iter::Integer
-    lsiter::Integer
-end
+import LsoBase
 
 
 """
-    ls_bt(f, g, w, s [, c, α0, η; maxiter])
+    bt(f, g, w, s [, c, α0, η; maxiter])
 
     Performs Backtracking (Armijo) Line Search for given point w and step s.
 
     Function f and its gradient g should only depend on the argument w.
-    The parameter α0 is used as initial stepsize.
+    The parameter α_0 is used as initial stepsize.
     The stepsize satisfying Armijo (or when maxiter is reached) is returned,
     as well as the iteration counter.
 """
-function ls_bt(f, g, w, s, c=1e-3, α0=1, η=0.5; maxiter=20, fw=f(w), gw=g(w))
+function bt(f, g, w, s, c=1e-3, α_0=1, η=0.5; maxiter=20, fw=f(w), gw=g(w))
     gws = (gw'*s)[1]
     for i = 1:maxiter
-        if f(w + α0*s) <= fw + α0*gws # Armijo satisfied?
-            return α0, i-1
+        if f(w + α_0*s) <= fw + α_0*gws # Armijo satisfied?
+            return α_0, i-1
         else 
-            α0 = η*α0
+            α_0 = η*α_0
         end
     end
-    return α0, maxiter
+    return α_0, maxiter
 end
 
 
 """
-    gd_bt(f, g, w [, ϵ, c, α0, η; maxiter, maxbtiter])
+    gd_bt(f, g, w [, ϵ, c, α_0, η; maxiter, maxbtiter])
 
     Performs Steepest Descent with Backtracking Line Search. Returns array
     of IterInfo.
@@ -50,8 +41,8 @@ end
     Function f and its gradient g should only depend on the argument w.
     The parameter w is used as initial point.
 """
-function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α0=1, η=0.5; maxiter=1000, maxbtiter=20, printiter=Opt.printiter)
-    infarr::Array{IterInfo, 1} = []
+function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter=20, printiter=PRINTITER)
+    infarr::Array{LsoBase.IterInfo, 1} = []
 
     # print info header
     headline = @sprintf "%6s | %3s | %9s | %9s"  "k" "i" "f" "opt"
@@ -66,7 +57,7 @@ function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α0=1, η=0.5; maxiter=1000, maxbtiter=
 
         # obtain opt, push info to array
         opt = vecnorm(gw, Inf)
-        push!(infarr, IterInfo(w, opt, k-1, lsiter))
+        push!(infarr, LsoBase.IterInfo(w, opt, k-1, lsiter))
 
         # print info
         if (k-1)%printiter == 0
@@ -78,7 +69,7 @@ function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α0=1, η=0.5; maxiter=1000, maxbtiter=
             break
         else
             s = -gw # -g(w)
-            α, lsiter = ls_bt(f, g, w, s, c, α0, η, maxiter=maxbtiter, fw=fw, gw=gw)
+            α, lsiter = bt(f, g, w, s, c, α_0, η, maxiter=maxbtiter, fw=fw, gw=gw)
             w += α*s
         end
 
