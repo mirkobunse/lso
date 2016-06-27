@@ -24,9 +24,9 @@ view_mnist(example) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, 
 
     Test GD.gd_bt(...) with Logistic Regression on MNIST data.
 """
-function gd_bt_mnist(maxiter=1000)
+function gd_bt_mnist(maxiter=10000)
     # read data
-    file = matopen("data/mnist.mat")
+    file = MAT.matopen("data/mnist.mat")
     X = full(read(file, "X"))
     y = full(read(file, "y"))[:]
 
@@ -36,13 +36,13 @@ function gd_bt_mnist(maxiter=1000)
 
     # tst
     w0 = randn(784)
-    @time infarr = GD.gd_bt(f, g, w0, maxiter=maxiter)
-    w = infarr[end].w
-    iter = infarr[end].iter
-    opt = infarr[end].opt
+    @time inf = GD.gd_bt(f, g, w0, maxiter=maxiter, printiter=100)
+    w = inf[:w][end]
+    iter = inf[:iter][end]
+    opt = inf[:opt][end]
 
     view_mnist(w)
-    return infarr
+    return inf
 end
 
 

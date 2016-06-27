@@ -1,27 +1,44 @@
 module LsoBase
 
 
+using DataFrames
 using Gadfly
 using Colors
 
 
-type IterInfo
-    w::Array{Float64, 1}
-    opt::Float64
-    iter::Integer
-    lsiter::Integer
-end
+"""
+    newinf()
+
+    Create new DataFrame to hold iteration info. Will have columns w, opt, iter and lsiter.
+"""
+newinf() = DataFrame(
+               w = Array{Float64, 1}[],
+               opt = Float64[],
+               iter = Int32[],
+               lsiter = Int32[]
+           )
 
 
 """
-    plotinf(infarr [, ylabel])
+    pushinf!(inf, w, opt, iter, lsiter)
 
-    Plot development of optimality in IterInfo array.
+    Will push the given iteration info to DataFrame inf.
 """
-function plotinf(infarr, ylabel="Optimality ‖∇f(x)‖∞")
-    opts = [info.opt for info in infarr]
-    plot(x=1:length(opts), y=opts, Scale.y_log10, Scale.x_continuous, Geom.line, Guide.xlabel("Iteration"), Guide.ylabel(ylabel))
-end
+pushinf!(inf::DataFrame, w::Array{Float64, 1}, opt::Float64, iter::Int32, lsiter::Int32) = push!(inf, (
+                                                                                               w,
+                                                                                               opt,
+                                                                                               iter,
+                                                                                               lsiter
+                                                                                           ))
+
+
+"""
+    plotopt(inf)
+
+    Plot development of optimality, as given by the DataFrame inf.
+"""
+plotopt(inf::DataFrame) = plot(inf, x=:iter, y=:opt, Scale.y_log10, Scale.x_continuous(format=:plain),
+                               Geom.line, Guide.xlabel("Iteration"), Guide.ylabel("Optimality ‖∇f(x)‖∞"))
 
 
 end

@@ -41,8 +41,8 @@ end
     Function f and its gradient g should only depend on the argument w.
     The parameter w is used as initial point.
 """
-function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter=20, printiter=PRINTITER)
-    infarr::Array{LsoBase.IterInfo, 1} = []
+function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter=20, printiter=1)
+    inf = LsoBase.newinf()
 
     # print info header
     headline = @sprintf "%6s | %3s | %9s | %9s"  "k" "i" "f" "opt"
@@ -57,7 +57,7 @@ function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter
 
         # obtain opt, push info to array
         opt = vecnorm(gw, Inf)
-        push!(infarr, LsoBase.IterInfo(w, opt, k-1, lsiter))
+        LsoBase.pushinf!(inf, w, opt, k-1, lsiter)
 
         # print info
         if (k-1)%printiter == 0
@@ -75,7 +75,7 @@ function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter
 
     end # end of optimization
 
-    return infarr
+    return inf
 end
 
 
