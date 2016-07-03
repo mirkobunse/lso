@@ -1,9 +1,9 @@
 # 
 module Rand
 
-using LsoBase
-using GD
-using LinReg
+import LsoBase
+import GD
+import LinReg
 
 
 """

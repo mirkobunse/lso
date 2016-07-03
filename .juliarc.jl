@@ -1,12 +1,18 @@
 
 reload(name::AbstractString) = Base.reload(name)
 function reload()
-    reloaddir(pwd(), true)
+    for dir in ["opt", "obj", "eval"]
+        reloaddir(pwd()*"/"*dir, false)
+    end
 end
 
 # import modules
 println("Importing modules...")
-importdir(pwd(), true)
+push!(LOAD_PATH, pwd())
+import LsoBase
+for dir in ["opt", "obj", "eval"]
+    importdir(pwd()*"/"*dir, false)
+end
 
 # run tests
 #println("")

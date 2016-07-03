@@ -6,7 +6,7 @@ module GD
 
 # export ...
 
-using LsoBase
+import LsoBase
 
 
 """

@@ -5,7 +5,7 @@ using DataFrames
 using Gadfly
 using Colors
 
-using LsoBase
+import LsoBase
 
 
 """
