@@ -5,6 +5,20 @@ using DataFrames
 
 
 """
+    includedir(dir)
+
+    Include all non-hidden .jl files from the given directory
+"""
+function includedir(dir::AbstractString)
+    for filename in readdir(dir)
+        if isfile(dir*"/"*filename) && endswith(filename, ".jl") && !startswith(filename, ".")
+            include(dir*"/"*filename)
+        end
+    end
+end
+
+
+"""
     newinf()
 
     Create new DataFrame to hold iteration info. Will have columns w, opt, iter and lsiter.

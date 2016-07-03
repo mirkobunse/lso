@@ -1,20 +1,25 @@
+MODULE_NAMES = ["LsoBase", "Plotting", "Opt", "Obj", "Tst", "Eval"]
 
-reload(name::AbstractString) = Base.reload(name)
-function reload()
-    for dir in ["opt", "obj", "eval"]
-        reloaddir(pwd()*"/"*dir, false)
-    end
-end
 
 # import modules
 println("Importing modules...")
-push!(LOAD_PATH, pwd())
-import LsoBase
-for dir in ["opt", "obj", "eval"]
-    importdir(pwd()*"/"*dir, false)
+push!(LOAD_PATH, pwd()*"/mod")
+for name in MODULE_NAMES
+    try
+        eval(Expr(:import, symbol(name))) # metaprogramming: import <name>
+        println("Imported $(name)")
+    catch e
+        println("ERROR: Could not import $(name):\n$e")
+    end
+end
+
+# ease reloading
+reload(name::AbstractString) = Base.reload(name)
+function reload()
+    for name in MODULE_NAMES
+        reload(name)
+    end
 end
 
 # run tests
-#println("")
-#OptTst.tst()
-#ObjTst.tst()
+Tst.all()

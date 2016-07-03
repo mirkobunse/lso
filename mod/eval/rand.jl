@@ -1,27 +1,23 @@
-# 
-module Rand
-
-import LsoBase
-import GD
-import LinReg
-
+import Opt
+import Obj
+import Plotting
 
 """
-    gd_bt_rand([maxiter; n, m])
+    rand_gd_bt([maxiter; n, m])
 
-    Test GD.gd_bt() with random data
+    Test GD with BT on Linear Regression of random data.
 """
-function gd_bt(maxiter=1000; n=1000, m=10000)
+function rand_gd_bt(maxiter=1000; n=1000, m=10000)
     # init random data
     w_true = randn(n)
     X = randn(m,n)
     y = X*w_true
-    f(w) = LinReg.f(w, X, y)
-    g(w) = LinReg.g(w, X, y)
+    f(w) = Obj.f_linreg(w, X, y)
+    g(w) = Obj.g_linreg(w, X, y)
 
     # tst
     w0 = randn(n)
-    @time inf = GD.gd(f, g, w0, maxiter=maxiter)
+    @time inf = Opt.gd(f, g, w0, maxiter=maxiter)
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]
@@ -36,8 +32,5 @@ function gd_bt(maxiter=1000; n=1000, m=10000)
     println(@sprintf "%16s = %9.3e\n%16s = %9.3e" "‖∇f(x)‖∞" opt "‖w-w_true‖ " vecnorm(w-w_true, 2))
 
     return nothing # inf
-
-end
-
 
 end
