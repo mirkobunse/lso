@@ -3,14 +3,15 @@
 # 
 module Mnist
 
-using Gadfly
 using Colors
-import MAT
-import Images
-import ImageView
+using MAT
+using Images
+using ImageView
 
-import GD
-import LinReg
+using GD
+using LinReg
+using LogReg
+using Plotting
 
 
 """
@@ -22,10 +23,11 @@ view_mnist(example) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, 
 """
     gd_bt_mnist()
 
-    Test GD.gd_bt(...) with Logistic Regression on MNIST data.
+    Test GD.gd_bt(...) with Linear Regression on MNIST data.
 """
-function gd_bt_mnist(maxiter=10000)
+function gd_bt(maxiter=1000)
     # read data
+    println("Reading mnist.mat...")
     file = MAT.matopen("data/mnist.mat")
     X = full(read(file, "X"))
     y = full(read(file, "y"))[:]
@@ -35,14 +37,18 @@ function gd_bt_mnist(maxiter=10000)
     g(w) = LinReg.g(w, X, y)
 
     # tst
-    w0 = randn(784)
-    @time inf = GD.gd_bt(f, g, w0, maxiter=maxiter, printiter=100)
-    w = inf[:w][end]
-    iter = inf[:iter][end]
-    opt = inf[:opt][end]
+    w0 = zeros(784) # randn(784)
+    @time inf = GD.gd(f, g, w0, maxiter=maxiter, printiter=100)
+    w = inf[end, :w]
+    iter = inf[end, :iter]
+    opt = inf[end, :opt]
 
     view_mnist(w)
-    return inf
+
+    println("Plotting...")
+    Base.display(Plotting.plot_inf(inf))
+
+    return nothing
 end
 
 

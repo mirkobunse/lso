@@ -1,13 +1,13 @@
 # 
 module Rand
 
-import LsoBase
-import GD
-import LinReg
+using LsoBase
+using GD
+using LinReg
 
 
 """
-    gd_bt_rand([; maxiter, n, m])
+    gd_bt_rand([maxiter; n, m])
 
     Test GD.gd_bt() with random data
 """
@@ -21,20 +21,22 @@ function gd_bt(maxiter=1000; n=1000, m=10000)
 
     # tst
     w0 = randn(n)
-    @time inf = GD.gd_bt(f, g, w0, maxiter=maxiter)
-    w = inf[:w][end]
-    iter = inf[:iter][end]
-    opt = inf[:opt][end]
+    @time inf = GD.gd(f, g, w0, maxiter=maxiter)
+    w = inf[end, :w]
+    iter = inf[end, :iter]
+    opt = inf[end, :opt]
 
     # assert
-    success = isapprox(w, w_true, atol=1e-4)
+    success = isapprox(w, w_true, atol=1e-3)
     if (success)
-        println("gd_bt_rand SUCCEEDED: Found true w in $iter steps (Optimality $opt)")
+        println("\nSUCCEEDED: Found true w in $iter steps!")
     else
-        println("gd_bt_rand FAILED: Did not find true w in $iter steps (Optimality $opt).\nw = $w\nw_true = $w_true")
+        println("\nFAILED: Did not find true w in $iter steps!")
     end
+    println(@sprintf "%16s = %9.3e\n%16s = %9.3e" "‖∇f(x)‖∞" opt "‖w-w_true‖ " vecnorm(w-w_true, 2))
 
-    return inf
+    return nothing # inf
+
 end
 
 

@@ -6,11 +6,11 @@ module GD
 
 # export ...
 
-import LsoBase
+using LsoBase
 
 
 """
-    bt(f, g, w, s [, c, α0, η; maxiter])
+    bt(f, g, w, s [, fw, gw; c, α0, η, maxiter])
 
     Performs Backtracking (Armijo) Line Search for given point w and step s.
 
@@ -19,7 +19,9 @@ import LsoBase
     The stepsize satisfying Armijo (or when maxiter is reached) is returned,
     as well as the iteration counter.
 """
-function bt(f, g, w, s, c=1e-3, α_0=1, η=0.5; maxiter=20, fw=f(w), gw=g(w))
+function bt(f::Function, g::Function, w::Array{Float64,1}, s::Array{Float64,1},
+            fw::Float64=f(w), gw::Array{Float64,1}=g(w);
+            c::Float64=1e-3, α_0::Float64=1.0, η::Float64=0.5, maxiter::Int32=20)
     gws = (gw'*s)[1]
     for i = 1:maxiter
         if f(w + α_0*s) <= fw + α_0*gws # Armijo satisfied?
@@ -33,19 +35,20 @@ end
 
 
 """
-    gd_bt(f, g, w [, ϵ, c, α_0, η; maxiter, maxbtiter])
+    gd_bt(f, g, w [, ls; ϵ, maxiter, printiter])
 
-    Performs Steepest Descent with Backtracking Line Search. Returns array
+    Performs Steepest Descent with the given Line Search. Returns array
     of IterInfo.
 
     Function f and its gradient g should only depend on the argument w.
     The parameter w is used as initial point.
 """
-function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter=20, printiter=1)
-    inf = LsoBase.newinf()
+function gd(f::Function, g::Function, w::Array{Float64,1}, ls::Function=bt;
+            ϵ::Float64=1e-6, maxiter::Int32=1000, printiter::Int32=5)
+    inf = LsoBase.new_inf()
 
     # print info header
-    headline = @sprintf "%6s | %3s | %9s | %9s"  "k" "i" "f" "opt"
+    headline = @sprintf "\n%6s | %3s | %9s | %9s"  "k" "i" "f" "opt"
     println(headline, "\n", repeat("-", length(headline)))
 
     # optimization
@@ -57,7 +60,7 @@ function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter
 
         # obtain opt, push info to array
         opt = vecnorm(gw, Inf)
-        LsoBase.pushinf!(inf, w, opt, k-1, lsiter)
+        LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter)
 
         # print info
         if (k-1)%printiter == 0
@@ -69,7 +72,7 @@ function gd_bt(f, g, w, ϵ=1e-6, c=1e-3, α_0=1, η=0.5; maxiter=1000, maxbtiter
             break
         else
             s = -gw # -g(w)
-            α, lsiter = bt(f, g, w, s, c, α_0, η, maxiter=maxbtiter, fw=fw, gw=gw)
+            α, lsiter = ls(f, g, w, s, fw, gw)
             w += α*s
         end
 
