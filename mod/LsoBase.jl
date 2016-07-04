@@ -43,4 +43,7 @@ function push_inf!(inf::DataFrame, w::Array{Float64, 1},
 end
 
 
+acc(y_true::Array{Float64, 1}, y_pred::Array{Float64, 1}) = mean(max( y_true .* y_pred, 0))
+
+
 end

@@ -7,6 +7,6 @@ import LsoBase
 
 include(dirname(@__FILE__)*"/eval/rosenbrock.jl")
 include(dirname(@__FILE__)*"/eval/rand.jl")
-# include(dirname(@__FILE__)*"/eval/mnist.jl")
+include(dirname(@__FILE__)*"/eval/mnist.jl")
 
 end

@@ -11,12 +11,12 @@ import Obj.Objective
 """
 function bt(obj::Objective, w::Array{Float64,1}, s::Array{Float64,1},
             fw::Float64=obj.f(w), gw::Array{Float64,1}=obj.g(w);
-            c::Float64=1e-3, α_0::Float64=1.0, η::Float64=0.5, maxiter::Int32=20)
+            c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int32=10)
     gws = (gw'*s)[1]
     for i = 1:maxiter
-        if obj.f(w + α_0*s) <= fw + α_0*gws # Armijo satisfied?
+        if obj.f(w + α_0*s) <= fw + c*α_0*gws # Armijo satisfied?
             return α_0, i-1
-        else 
+        else
             α_0 = η*α_0
         end
     end
