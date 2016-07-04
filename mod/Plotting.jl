@@ -9,7 +9,18 @@ import LsoBase
 
 
 """
-    plot_inf(inf [, y])
+    display_inf(inf)
+
+    Like plot_inf(inf), but instead of returning plot, display it.
+"""
+function display_inf(inf::DataFrame)
+    Base.display(plot_inf(inf))
+    return nothing
+end
+
+
+"""
+    plot_inf(inf)
 
     Plot development of optimality and function value, as given by the DataFrame inf.
 """

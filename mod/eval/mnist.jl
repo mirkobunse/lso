@@ -10,7 +10,7 @@ import Plotting
 """
     Show a row of the MNIST data matrix as image
 """
-mnist_view(example) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, reshape(example, (28,28)) )), xy=["y","x"])
+mnist_view(img) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, reshape(img, (28,28)) )), xy=["y","x"])
 
 """
     mnist_gd_bt()
@@ -18,27 +18,23 @@ mnist_view(example) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, 
     Test GD with BT on Linear Regression of MNIST data.
 """
 function mnist_gd_bt(maxiter=1000)
-    # read data
-    println("Reading mnist.mat...")
+
+    println("Reading data...")
     file = MAT.matopen("data/mnist.mat")
     X = full(read(file, "X"))
     y = full(read(file, "y"))[:]
 
-    # prepare objective function
-    f(w) = Obj.f_linreg(w, X, y)
-    g(w) = Obj.g_linreg(w, X, y)
-
     # tst
     w0 = zeros(784) # randn(784)
-    @time inf = Opt.gd(f, g, w0, maxiter=maxiter, printiter=100)
+    @time inf = Opt.gd(Obj.linreg(X, y), w0, maxiter=maxiter, printiter=100)
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]
 
+    println("Plotting...")
+    Plotting.display_inf(inf)
     # mnist_view(w)
 
-    println("Plotting...")
-    Base.display(Plotting.plot_inf(inf))
-
     return nothing
+
 end

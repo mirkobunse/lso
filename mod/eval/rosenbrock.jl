@@ -7,16 +7,21 @@ import Plotting
 
     Test GD with BT on the Rosenbrock function.
 """
-function rosenbrock_gd_bt(maxiter::Int32=convert(Int32, 1e5))
+function rosenbrock_gd_bt(maxiter::Int32=100000) # 1e5
+
     # init rosenbrock function
-    f(w) = 100*(w[2]-w[1]^2)^2 + (1-w[1])^2
-    function g(w)
-        g2 = 200*(w[2]-w[1]^2)
-        return [-2*(w[1]*g2 + (1-w[1])), g2]
-    end
+    rosenbrock = Obj.Objective(
+        w -> 100*(w[2]-w[1]^2)^2 + (1-w[1])^2,
+        function (w)
+            g2 = 200*(w[2]-w[1]^2)
+            return [-2*(w[1]*g2 + (1-w[1])), g2]
+        end
+    )
+
     # tst
     w = zeros(2)
-    inf = @time Opt.gd(f, g, w, maxiter=maxiter, printiter=10000)
+    inf = @time Opt.gd(rosenbrock, w, maxiter=maxiter, printiter=10000)
 
     return nothing # inf
+    
 end

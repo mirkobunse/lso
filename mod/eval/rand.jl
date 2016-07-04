@@ -7,17 +7,15 @@ import Plotting
 
     Test GD with BT on Linear Regression of random data.
 """
-function rand_gd_bt(maxiter=1000; n=1000, m=10000)
+function rand_gd_bt(maxiter=1000; n=100, m=1000)
     # init random data
     w_true = randn(n)
     X = randn(m,n)
     y = X*w_true
-    f = Obj.linreg(X, y).f
-    g = Obj.linreg(X, y).g
 
     # tst
     w0 = randn(n)
-    @time inf = Opt.gd(f, g, w0, maxiter=maxiter)
+    @time inf = Opt.gd(Obj.logreg(X, y), w0, maxiter=maxiter)
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]
@@ -31,6 +29,7 @@ function rand_gd_bt(maxiter=1000; n=1000, m=10000)
     end
     println(@sprintf "%16s = %9.3e\n%16s = %9.3e" "‖∇f(x)‖∞" opt "‖w-w_true‖ " vecnorm(w-w_true, 2))
 
+    Plotting.display_inf(inf)
     return nothing # inf
 
 end
