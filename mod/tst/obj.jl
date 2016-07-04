@@ -1,7 +1,7 @@
 import Obj
 
-function sg_linreg()
-    println("Testing Obj.sg_linreg...")
+function linreg_sg()
+    println("Testing Obj.linreg(X, y).sg(w)...")
 
     # init
     n = 10
@@ -11,10 +11,8 @@ function sg_linreg()
     w = randn(n)
 
     # tst
-    g = Obj.g_linreg(w, X, y)
-    sg = (@parallel (+) for i = 1:m
-        Obj.sg_linreg(w, X, y, i)
-    end) / m
+    g = Obj.linreg(X, y).g(w)
+    sg = sum([ Obj.linreg(X, y).sg(w, i) for i = 1:m ]) / m
 
     # assert
     success = (g ≈ sg) # approx equal?

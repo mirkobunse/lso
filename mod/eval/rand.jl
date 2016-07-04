@@ -12,8 +12,8 @@ function rand_gd_bt(maxiter=1000; n=1000, m=10000)
     w_true = randn(n)
     X = randn(m,n)
     y = X*w_true
-    f(w) = Obj.f_linreg(w, X, y)
-    g(w) = Obj.g_linreg(w, X, y)
+    f = Obj.linreg(X, y).f
+    g = Obj.linreg(X, y).g
 
     # tst
     w0 = randn(n)

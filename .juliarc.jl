@@ -22,4 +22,4 @@ function reload()
 end
 
 # run tests
-Tst.all()
+#Tst.all()

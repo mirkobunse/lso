@@ -12,7 +12,7 @@ function gd(f::Function, g::Function, w::Array{Float64,1}, ls::Function=bt;
     inf = LsoBase.new_inf()
 
     # print info header
-    headline = @sprintf "\n%6s | %3s | %9s | %9s"  "k" "i" "f" "opt"
+    headline = @sprintf "\n%6s | %3s | %9s | %9s"  "k" "i" "f" "infeas"
     println(headline, "\n", repeat("-", length(headline)))
 
     # optimization
