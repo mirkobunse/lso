@@ -22,6 +22,11 @@ function rosenbrock_gd_bt(maxiter::Int32=100000) # 1e5
     w = zeros(2)
     inf = @time Opt.gd(rosenbrock, w, maxiter=maxiter, printiter=10000)
 
+    # ask user for plot
+    print("\nPlot progress? (y/N): ")
+    if startswith(readline(STDIN), "y")
+        Plotting.display_inf(inf)
+    end
     return nothing # inf
     
 end

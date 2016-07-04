@@ -25,6 +25,7 @@ end
     Plot development of optimality and function value, as given by the DataFrame inf.
 """
 function plot_inf(inf::DataFrame)
+    println("Plotting...")
     df = vcat(
         DataFrame(
             x = inf[:iter],

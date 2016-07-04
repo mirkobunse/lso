@@ -31,9 +31,12 @@ function mnist_gd_bt(maxiter=1000)
     iter = inf[end, :iter]
     opt = inf[end, :opt]
 
-    println("Plotting...")
-    Plotting.display_inf(inf)
-    # mnist_view(w)
+    # ask user for plot
+    print("\nPlot progress? (y/N): ")
+    if startswith(readline(STDIN), "y")
+        # mnist_view(w)
+        Plotting.display_inf(inf)
+    end
 
     return nothing
 

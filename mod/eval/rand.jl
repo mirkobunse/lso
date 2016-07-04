@@ -1,5 +1,5 @@
-import Opt
 import Obj
+import Opt
 import Plotting
 
 """
@@ -29,7 +29,11 @@ function rand_gd_bt(maxiter=1000; n=100, m=1000)
     end
     println(@sprintf "%16s = %9.3e\n%16s = %9.3e" "‖∇f(x)‖∞" opt "‖w-w_true‖ " vecnorm(w-w_true, 2))
 
-    Plotting.display_inf(inf)
+    # ask user for plot
+    print("\nPlot progress? (y/N): ")
+    if startswith(readline(STDIN), "y")
+        Plotting.display_inf(inf)
+    end
     return nothing # inf
 
 end
