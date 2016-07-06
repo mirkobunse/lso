@@ -45,7 +45,7 @@ end
 
     Test GD with BT on Logistic Regression of 2-class random data.
 """
-function rand_gd_bt_logreg(maxiter=2500; n=100, m=1000, noisefac=4.8)
+function rand_gd_bt_logreg(maxiter=1000; n=100, m=1000, noisefac=4.8)
 
     m2 = convert(Int32, m/2)    # m/2 as integer
 
@@ -61,16 +61,31 @@ function rand_gd_bt_logreg(maxiter=2500; n=100, m=1000, noisefac=4.8)
     X = vcat(X_1, X_2)[perm, :]
     y = vcat(vec(repeat([-1.0], inner=[m2,1])), vec(repeat([1.0], inner=[m2,1])))[perm]
 
+    # random split
+    println("Data set contains $(size(X)[1]) examples of dimension $(size(X)[2]).")
+
+    # split into test and training set (shuffled)
+    perm = randperm(length(y))
+    train = perm[1:convert(Int32, floor(length(perm)*2/3))]
+    test  = perm[convert(Int32, ceil(length(perm)*2/3)):end]
+    X_train = X[train, :]
+    X_test  = X[test, :]
+    y_train = y[train]
+    y_test  = y[test]
+    println("Shuffled into training set ($(size(X_train)[1]) examples) and test set ($(size(X_test)[1]) examples).")
+
     # tst
     w0 = randn(n)
-    @time inf = Opt.gd(Obj.linreg(X, y), w0, maxiter=maxiter, printiter=100)
+    @time inf = Opt.gd(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, printiter=10)
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]
 
     # acc
-    acc = LsoBase.acc(y, Obj.logreg_predict(w, X))
-    println("\nTraining set accuracy: $acc")
+    acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
+    acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
+    println("\nTraining set accuracy: $acc_train")
+    println("\nTest set accuracy: $acc_test")
 
     # ask user for plot
     print("\nPlot progress? (y/N): ")
