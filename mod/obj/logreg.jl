@@ -10,4 +10,4 @@ logreg(X::Array{Float64,2}, y::Array{Float64,1}) = Objective(
     end
 )
 
-logreg_predict(w, X) = sign(vec(1 ./ (1 + exp(-X*w))) -.5)
+logreg_predict(w::Array{Float64,1}, X::Array{Float64,2}) = sign(vec(1 ./ (1 + exp(-X*w))) -.5)

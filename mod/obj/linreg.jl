@@ -10,3 +10,5 @@ linreg(X::Array{Float64,2}, y::Array{Float64,1}) = Objective(
     w::Array{Float64,1} -> X' * (X*w - y) / length(y),
     (w::Array{Float64,1}, i::Int32) -> X[i,:]' * (X[i,:]*w - y[i])
 )
+
+linreg_predict(w::Array{Float64,1}, X::Array{Float64,2}) = sign(vec(X*w))
