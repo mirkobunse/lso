@@ -4,11 +4,24 @@ import Plotting
 
 
 """
-    rand_gd_bt([maxiter; n, m])
+    rand_gd_bt([; maxiter, n, m])
 
     Test GD with BT on Linear Regression of random data.
 """
-function rand_gd_bt_linreg(maxiter=1000; n=100, m=1000)
+function rand_gd_bt_linreg(; maxiter=1000, n=100, m=1000)
+    _rand_linreg(Opt.gd, Opt.bt, maxiter=maxiter, n=n, m=m)
+end
+
+"""
+    rand_sgd_bt([; maxiter, n, m])
+
+    Test SGD with BT on Linear Regression of random data.
+"""
+function rand_sgd_bt_linreg(; batchSize=1, maxiter=10000, n=100, m=1000)
+    _rand_linreg(Opt.sgd, Opt.bt, batchSize=batchSize, maxiter=maxiter, n=n, m=m)
+end
+
+function _rand_linreg(opt::Function, ls::Function; batchSize=1, maxiter=1000, n=100, m=1000)
     # init random data
     w_true = randn(n)
     X = randn(m,n)
@@ -16,7 +29,12 @@ function rand_gd_bt_linreg(maxiter=1000; n=100, m=1000)
 
     # tst
     w0 = randn(n)
-    @time inf = Opt.gd(Obj.linreg(X, y), w0, maxiter=maxiter)
+    inf = LsoBase.new_inf()
+    try 
+        @time inf = opt(Obj.linreg(X, y), w0, maxiter=maxiter, batchSize=batchSize)
+    catch e
+        @time inf = opt(Obj.linreg(X, y), w0, maxiter=maxiter)
+    end
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]

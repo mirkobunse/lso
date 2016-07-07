@@ -8,6 +8,10 @@
 linreg(X::Array{Float64,2}, y::Array{Float64,1}) = Objective(
     w::Array{Float64,1} -> vecnorm(y - X*w)^2 / 2,
     w::Array{Float64,1} -> X' * (X*w - y) / length(y),
+    function (w::Array{Float64,1})
+        i = rand(1:length(y))
+        return X[i,:]' * (X[i,:]*w - y[i])
+    end,
     (w::Array{Float64,1}, i::Int32) -> X[i,:]' * (X[i,:]*w - y[i])
 )
 
