@@ -28,7 +28,8 @@ new_inf() = DataFrame(
                 f = Float64[],
                 opt = Float64[],
                 iter = Int32[],
-                lsiter = Int32[]
+                lsiter = Int32[],
+                time = Float64[]
             )
 
 
@@ -38,8 +39,8 @@ new_inf() = DataFrame(
     Will push the given iteration info to DataFrame inf.
 """
 function push_inf!(inf::DataFrame, w::Array{Float64, 1},
-                   f::Float64, opt::Float64, iter::Int32, lsiter::Int32)
-    push!(inf, (w, f, opt, iter, lsiter))
+                   f::Float64, opt::Float64, iter::Int32, lsiter::Int32, time::Float64=0.0)
+    push!(inf, (w, f, opt, iter, lsiter, time))
 end
 
 

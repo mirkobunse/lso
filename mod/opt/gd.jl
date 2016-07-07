@@ -1,21 +1,23 @@
 import Obj.Objective
 
 """
-    gd(obj, w [, ls; ϵ, maxiter, printiter])
+    gd(obj, w [, ls; ϵ, maxiter, timeiter])
 
     Performs Steepest Descent on objective function with initial w and the
     given Line Search function. Returns info DataFrame.
 """
-function gd(obj::Objective, w::Array{Float64,1}, ls::Function=bt;
-            ϵ::Float64=1e-6, maxiter::Int32=1000, printiter::Int32=5)
+@fastmath function gd(obj::Objective, w::Array{Float64,1}, ls::Function=bt;
+            ϵ::Float64=1e-6, maxiter::Int32=1000, timeiter::Int32=5)
     inf = LsoBase.new_inf()
 
     # print info header
-    headline = @sprintf "\n%6s | %3s | %9s | %9s"  "k" "i" "f" "infeas"
+    headline = @sprintf "\n%6s | %6s | %3s | %9s | %9s"  "k" "sec" "i" "f" "infeas"
     println(headline, "\n", repeat("-", length(headline)))
 
     # optimization
     lsiter = 0
+    start = Base.time()
+    time = 0.0
     try 
 
         for k = 1:maxiter
@@ -25,12 +27,19 @@ function gd(obj::Objective, w::Array{Float64,1}, ls::Function=bt;
 
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
-            LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter)
 
             # print info
-            if (k-1)%printiter == 0
-                println(@sprintf "%6d | %3d | %9.3e | %9.3e"  k-1 lsiter fw opt)
+            if (k-1)%timeiter == 0
+                if k > 0
+                    time = Base.time() - start
+                else
+                    start = Base.time()
+                    time = 0.0
+                end
+                println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter fw opt)
             end 
+
+            LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter, time)
 
             # take step or stop
             if opt < ϵ # stopping criterion satisfied?

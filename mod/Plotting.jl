@@ -38,9 +38,18 @@ function plot_inf(inf::DataFrame)
             name = [ "Function Value" for i=1:length(inf[:iter]) ]  # f(x)
         )
     )
+#    return inf[ inf[:iter] .== 4 ,[:iter, :time]]
     return Gadfly.plot(df, x=:x, y=:y, color=:name, Geom.line,
-                       Scale.y_log10, Scale.x_continuous(format=:plain),
-                       Guide.xlabel("Iteration"), Guide.ylabel(""), Guide.colorkey(""))
+                       Scale.y_log10, Scale.x_continuous(format=:plain,
+                       labels = function (x)
+                           label::ASCIIString = @sprintf "%6d" x
+                           times = inf[ inf[:iter] .== x, :time ]
+                           if length(times) > 0
+                               label *= @sprintf "\n%6.3fs" times[1]
+                           end
+                           return label
+                       end),
+                       Guide.xlabel("\nIteration\n(Time)"), Guide.ylabel(""), Guide.colorkey(""))
 end
 
 

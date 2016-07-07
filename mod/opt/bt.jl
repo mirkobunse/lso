@@ -9,10 +9,10 @@ import Obj.Objective
     If however maxiter is reached, that stepsize is returned with the iteration
     counter.
 """
-function bt(obj::Objective, w::Array{Float64,1}, s::Array{Float64,1},
+@fastmath function bt(obj::Objective, w::Array{Float64,1}, s::Array{Float64,1},
             fw::Float64=obj.f(w), gw::Array{Float64,1}=obj.g(w);
             c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int32=10)
-    gws = (gw'*s)[1]
+    @inbounds gws = (gw'*s)[1]
     for i = 1:maxiter
         if obj.f(w + α_0*s) <= fw + c*α_0*gws # Armijo satisfied?
             return α_0, i-1
