@@ -32,6 +32,7 @@ function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5)
     X = full(read(file, "X"))
     y = full(read(file, "y"))[:]
     println("Data set contains $(size(X)[1]) examples of dimension $(size(X)[2]).")
+    close(file)
 
     # split into test and training set (shuffled)
     perm = randperm(length(y))
