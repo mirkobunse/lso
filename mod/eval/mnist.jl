@@ -17,7 +17,15 @@ mnist_view(img) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, resh
 
     Test GD with BT on Logistic Regression of MNIST data.
 """
-function mnist_gd_bt(maxiter=10000)
+function mnist_gd_bt(; maxiter=10000)
+    _mnist(Opt.gd, maxiter=maxiter)
+end
+
+function mnist_sgd_bt(; maxiter=10000, batchSize=1)
+    _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize, timeiter=10)
+end
+
+function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5)
 
     println("Reading data...")
     file = MAT.matopen("data/mnist.mat")
@@ -37,7 +45,12 @@ function mnist_gd_bt(maxiter=10000)
 
     # tst
     w0 = zeros(784) # rand(784)
-    @time inf = Opt.gd(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, printiter=5)
+    inf = LsoBase.new_inf()
+    try
+        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
+    catch e
+        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, timeiter=timeiter)
+    end
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]

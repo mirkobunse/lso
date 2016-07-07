@@ -12,7 +12,7 @@ import Obj.Objective
     inf = LsoBase.new_inf()
 
     # print info header
-    headline = @sprintf "\n%6s | %3s | %9s | %9s"  "k" "i" "f" "infeas"
+    headline = @sprintf "\n%6s | %6s | %3s | %9s | %9s"  "k" "sec" "i" "f" "infeas"
     println(headline, "\n", repeat("-", length(headline)))
 
     # optimization
