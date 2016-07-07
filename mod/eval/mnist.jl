@@ -22,7 +22,7 @@ function mnist_gd_bt(; maxiter=10000)
 end
 
 function mnist_sgd_bt(; maxiter=10000, batchSize=1)
-    _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize, timeiter=10)
+    _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize)
 end
 
 function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5)
