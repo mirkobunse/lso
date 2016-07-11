@@ -8,31 +8,58 @@ import Obj
 import Plotting
 
 """
-    Show a row of the MNIST data matrix as image
-"""
-mnist_view(img) = ImageView.view(Images.grayim(convert( Images.Image{Gray}, reshape(img, (28,28)) )), xy=["y","x"])
+    mnist_img(row)
 
+    Obtain the row of the MNIST data matrix as image.
 """
-    mnist_gd_bt()
-
-    Test GD with BT on Logistic Regression of MNIST data.
-"""
-function mnist_gd_bt(; maxiter=10000)
-    _mnist(Opt.gd, maxiter=maxiter)
+function mnist_img(row)
+    img = Images.grayim(convert( Images.Image{Gray}, reshape(row, (28,28)) ))
+    img["spatialorder"] = ["x", "y"]
+    return img
 end
 
-function mnist_sgd_bt(; maxiter=10000, batchSize=1)
-    _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize)
-end
+"""
+    mnist_view(img)
 
-function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5)
+    View an image obtained by mnist_img.
+"""
+mnist_view(img) = ImageView.view(img) # xy=["y","x"])
 
+"""
+    mnist_saveview(filename, imgview)
+
+    Save the image obtained by mnist_view(example)
+"""
+mnist_saveimg(filename, img) = Images.save(filename, img)
+
+"""
+    mnist_readdata()
+
+    Return the data as (X, y) tuple, where X is the example matrix and y is the labels.
+"""
+function mnist_readdata()
     println("Reading data...")
     file = MAT.matopen("data/mnist.mat")
     X = full(read(file, "X"))
     y = full(read(file, "y"))[:]
-    println("Data set contains $(size(X)[1]) examples of dimension $(size(X)[2]).")
     close(file)
+    return X, y
+end
+
+
+
+function mnist_gd_bt(; maxiter=10000, ϵ=1e-3)
+    _mnist(Opt.gd, maxiter=maxiter, ϵ=ϵ)
+end
+
+function mnist_sgd_bt(; maxiter=10000, batchSize=1, ϵ=1e-4)
+    _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize, ϵ=ϵ)
+end
+
+function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5, ϵ=1e-3)
+
+    X, y = mnist_readdata()
+    println("Data set contains $(size(X)[1]) examples of dimension $(size(X)[2]).")
 
     # split into test and training set (shuffled)
     perm = randperm(length(y))
@@ -48,13 +75,11 @@ function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5)
     w0 = zeros(784) # rand(784)
     inf = LsoBase.new_inf()
     try
-        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
+        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
     catch e
-        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, timeiter=timeiter)
+        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter)
     end
     w = inf[end, :w]
-    iter = inf[end, :iter]
-    opt = inf[end, :opt]
 
     # acc
     acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
@@ -65,8 +90,19 @@ function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5)
     # ask user for plot
     print("\nPlot progress? (y/N): ")
     if startswith(readline(STDIN), "y")
-        mnist_view(w)
         Plotting.display_inf(inf)
+
+        optname = methods(opt).name
+        outfile = "./mnist_$optname$batchSize.pdf"
+        print("\nDraw to $outfile? (y/N): ")
+        if startswith(readline(STDIN), "y")
+            Plotting.draw_inf(inf, outfile)
+        end
+
+        print("\nShow weight vector? (y/N): ")
+        if startswith(readline(STDIN), "y")
+            mnist_view(mnist_img(w))
+        end
     end
 
     return nothing
