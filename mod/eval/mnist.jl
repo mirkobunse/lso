@@ -52,7 +52,7 @@ function mnist_gd_bt(; maxiter=10000, ϵ=1e-3)
     _mnist(Opt.gd, maxiter=maxiter, ϵ=ϵ)
 end
 
-function mnist_sgd_bt(; maxiter=10000, batchSize=1, ϵ=1e-4)
+function mnist_sgd_bt(; maxiter=10000, batchSize=1, ϵ=1e-2)
     _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize, ϵ=ϵ)
 end
 

@@ -12,7 +12,7 @@ function linreg_sg()
 
     # tst
     g = Obj.linreg(X, y).g(w)
-    sg = sum([ Obj.linreg(X, y).sgi(w, i) for i = 1:m ]) # / m
+    sg = sum([ Obj.linreg(X, y).sgi(w, i) for i = 1:m ]) ./ m
 
     # assert
     success = (g ≈ sg) # approx equal?
@@ -36,7 +36,7 @@ function logreg_sg()
 
     # tst
     g = Obj.logreg(X, y).g(w)
-    sg = sum([ Obj.logreg(X, y).sgi(w, i) for i = 1:m ])
+    sg = sum([ Obj.logreg(X, y).sgi(w, i) for i = 1:m ]) ./ m
 
     # assert
     success = (g ≈ sg) # approx equal?
