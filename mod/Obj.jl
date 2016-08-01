@@ -39,7 +39,7 @@ end
 """
     Returns a random index generator function for stochastic gradient.
 """
-_rng_sgd(y::Array{Float64,1}) = batchSize::Int32 -> randperm(length(y))[1:batchSize]
+_rng_sgd(y::Array{Float64,1}) = batchsize::Int32 -> randperm(length(y))[1:batchsize]
 
 
 

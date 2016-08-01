@@ -17,11 +17,11 @@ end
 
     Test SGD with BT on Linear Regression of random data.
 """
-function rand_sgd_bt_linreg(; batchSize=1, maxiter=10000, n=100, m=1000)
-    _rand_linreg(Opt.sgd, batchSize, maxiter, n, m)
+function rand_sgd_bt_linreg(; batchsize=1, maxiter=10000, n=100, m=1000)
+    _rand_linreg(Opt.sgd, batchsize, maxiter, n, m)
 end
 
-function _rand_linreg(opt::Function, batchSize=1, maxiter=1000, n=100, m=1000)
+function _rand_linreg(opt::Function, batchsize=1, maxiter=1000, n=100, m=1000)
     # init random data
     w_true = randn(n)
     X = randn(m,n)
@@ -31,7 +31,7 @@ function _rand_linreg(opt::Function, batchSize=1, maxiter=1000, n=100, m=1000)
     w0 = randn(n)
     inf = LsoBase.new_inf()
     try 
-        @time inf = opt(Obj.linreg(X, y), w0, maxiter=maxiter, batchSize=batchSize)
+        @time inf = opt(Obj.linreg(X, y), w0, maxiter=maxiter, batchsize=batchsize)
     catch e
         @time inf = opt(Obj.linreg(X, y), w0, maxiter=maxiter)
     end

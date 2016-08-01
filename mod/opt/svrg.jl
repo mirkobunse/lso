@@ -1,7 +1,7 @@
 import Obj.Objective
 
 """
-    svrg(obj, w [, ls; batchSize, estimation, ϵ, maxiter, printiter])
+    svrg(obj, w [, ls; batchsize, estimation, ϵ, maxiter, printiter])
 
     Performs SVRG (Stochastic Variance-Reduced Gradient Descent) on objective function with
     initial w and the given Line Search function. Returns info DataFrame.
@@ -9,7 +9,7 @@ import Obj.Objective
     The estimation parameter describes the number of iterations before a new w estimate is obtained.
 """
 @fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::Function=sbt;
-             batchSize::Int32=1, estimation::Int32=10,
+             batchsize::Int32=1, estimation::Int32=10,
              ϵ::Float64=1e-6, maxiter::Int32=1000, timeiter::Int32=100)
 
     inf = LsoBase.new_inf()
@@ -29,7 +29,7 @@ import Obj.Objective
         for k = 1:maxiter
 
             # stochastic batch setup
-            i = obj.rng(batchSize)   # random sgd index batch
+            i = obj.rng(batchsize)   # random sgd index batch
             fw = obj.sf(w, i)
             gw = obj.sg(w, i)
 
