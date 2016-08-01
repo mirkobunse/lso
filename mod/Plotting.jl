@@ -6,26 +6,27 @@ using Gadfly
 using Colors
 
 import LsoBase
+import Obj
 
 
 """
-    display_inf(inf)
+    display_inf(inf [, obj])
 
-    Like plot_inf(inf), but instead of returning the plot, display it.
+    Like plot_inf(inf [, obj]), but instead of returning the plot, display it.
 """
-function display_inf(inf::DataFrame)
-    Base.display(plot_inf(inf))
+function display_inf(inf::DataFrame, obj=nothing)
+    Base.display(plot_inf(inf, obj))
     return nothing
 end
 
 
 """
-    draw_inf(inf [, filename])
+    draw_inf(inf [, obj, filename])
 
-    Like plot_inf(inf), but instead of returning the plot, draw it to a file.
+    Like plot_inf(inf [, obj]), but instead of returning the plot, draw it to a file.
 """
-function draw_inf(inf::DataFrame, filename::ASCIIString="out.pdf")
-    draw(PDF(filename, 15cm, 9cm), plot_inf(inf))
+function draw_inf(inf::DataFrame, obj=nothing, filename::ASCIIString="out.pdf")
+    draw(PDF(filename, 15cm, 9cm), plot_inf(inf, obj))
 end
 
 
@@ -34,21 +35,29 @@ end
 
     Plot development of optimality and function value, as given by the DataFrame inf.
 """
-function plot_inf(inf::DataFrame)
+function plot_inf(inf::DataFrame, obj=nothing)
+
+    f   = inf[:f]
+    opt = inf[:opt]
+    if obj != nothing
+      println("Computing true f and opt values...")
+        f = [ obj.f(w)               for w in inf[:w] ]
+      opt = [ vecnorm(obj.g(w), Inf) for w in inf[:w] ]
+    end
+
     println("Plotting...")
     df = vcat(
         DataFrame(
             x = inf[:iter],
-            y = inf[:opt],
+            y = opt,
             name = [ "Optimality" for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
         ),
         DataFrame(
             x = inf[:iter],
-            y = inf[:f],
+            y = f,
             name = [ "Function Value" for i=1:length(inf[:iter]) ]  # f(x)
         )
     )
-#    return inf[ inf[:iter] .== 4 ,[:iter, :time]]
     return Gadfly.plot(df, x=:x, y=:y, color=:name, Geom.line,
                        Scale.y_log10(minvalue=1e-6, maxvalue=1e6), Scale.x_continuous(
                        labels = function (x)

@@ -93,13 +93,13 @@ function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5, ϵ=1e-3)
     # ask user for plot
     print("\nPlot progress? (y/N): ")
     if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf)
+        Plotting.display_inf(inf, obj)
 
         optname = methods(opt).name
         outfile = "./mnist_$optname$batchSize.pdf"
         print("\nDraw to $outfile? (y/N): ")
         if startswith(readline(STDIN), "y")
-            Plotting.draw_inf(inf, outfile)
+            Plotting.draw_inf(inf, obj, outfile)
         end
 
         print("\nShow weight vector? (y/N): ")
