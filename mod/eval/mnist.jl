@@ -52,11 +52,15 @@ function mnist_gd_bt(; maxiter=10000, ϵ=1e-3)
     _mnist(Opt.gd, maxiter=maxiter, ϵ=ϵ)
 end
 
-function mnist_sgd_bt(; maxiter=10000, batchSize=1, ϵ=1e-6)
+function mnist_sgd_sbt(; maxiter=10000, batchSize=1, ϵ=1e-6)
     _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize, ϵ=ϵ)
 end
 
-function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5, ϵ=1e-3)
+function mnist_svrg_sbt(; maxiter=10000, batchSize=1, estimation=10, ϵ=1e-6)
+    _mnist(Opt.svrg, maxiter=maxiter, batchSize=batchSize, estimation=estimation, ϵ=ϵ)
+end
+
+function _mnist(opt::Function; batchSize=1, estimation=10, maxiter=10000, timeiter=5, ϵ=1e-3)
 
     X, y = mnist_readdata()
     println("Data set contains $(size(X)[1]) examples of dimension $(size(X)[2]).")
@@ -76,9 +80,13 @@ function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5, ϵ=1e-3)
     inf = LsoBase.new_inf()
     obj = Obj.logreg(X_train, y_train)
     try
-        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
+        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize, estimation=estimation)
     catch e
-        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter)
+        try
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
+        catch e
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter)
+        end
     end
     w = inf[end, :w]
     f = obj.f(w)
