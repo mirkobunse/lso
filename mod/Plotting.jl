@@ -37,8 +37,8 @@ end
 """
 function plot_inf(inf::DataFrame, obj=nothing)
 
-    f   = inf[:f]
-    opt = inf[:opt]
+    f    = inf[:f]
+    opt  = inf[:opt]
     if obj != nothing
       println("Computing true f and opt values...")
         f = [ obj.f(w)               for w in inf[:w] ]
@@ -47,6 +47,11 @@ function plot_inf(inf::DataFrame, obj=nothing)
 
     println("Plotting...")
     df = vcat(
+        DataFrame(
+            x = inf[:iter],
+            y = inf[:opt],
+            name = [ "Assumed Opt." for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
+        ),
         DataFrame(
             x = inf[:iter],
             y = opt,
@@ -74,7 +79,11 @@ function plot_inf(inf::DataFrame, obj=nothing)
                            return label
                        end),
                        Guide.xticks(orientation=:horizontal),
-                       Guide.xlabel("\n\nIteration\n (Time)"), Guide.ylabel(""), Guide.colorkey(""))
+                       Guide.xlabel("\n\nIteration\n (Time)"), Guide.ylabel(""), Guide.colorkey(""),
+                       Scale.color_discrete_manual(LCHab{Float64}(65.0,70.0,0.0),
+                                                   LCHab{Float64}(70.0,60.0,240.0),
+                                                   LCHab{Float64}(93.7,125.2,100.43478260869566),
+                                                   order=[3,2,1]))
 end
 
 
