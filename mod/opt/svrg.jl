@@ -1,15 +1,20 @@
 import Obj.Objective
 
 """
-    svrg(obj, w [, ls; batchsize, estimation, ϵ, maxiter, printiter])
+    svrg(obj, w [, ls; batchsize, estimation, strategy, ϵ, maxiter, printiter])
 
     Performs SVRG (Stochastic Variance-Reduced Gradient Descent) on objective function with
     initial w and the given Line Search function. Returns info DataFrame.
 
-    The estimation parameter describes the number of iterations before a new w estimate is obtained.
+    The estimation parameter describes the number of iterations before a new w estimate is
+    obtained. The strategy to obtain a new w estimate is set by the strategy parameter. The
+    following stategies exist:
+    - :last     Snapshat of very last iteration (default)
+    - :rand     Random snapshot of last iterations
+    - :avg      Average of last iterations
 """
 @fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::Function=sbt;
-             batchsize::Int32=1, estimation::Int32=10,
+             batchsize::Int32=1, estimation::Int32=10, strategy::Symbol=:last,
              ϵ::Float64=1e-6, maxiter::Int32=1000, timeiter::Int32=100)
 
     inf = LsoBase.new_inf()
@@ -35,7 +40,13 @@ import Obj.Objective
 
             # svrg estimation update
             if (k-1) % estimation == 0
-                w_est  = w       # TODO implement other w choices
+                if strategy == :last
+                    w_est  = w       # TODO implement other w choices
+                elseif strategy == :rand
+                    w_est = inf[:w][ end-rand(1:estimation)+1 ]
+                elseif strategy == :avg
+                    w_est = mean(inf[:w][ (end-estimation+1):end ], 2)
+                end
                 g_est = obj.g(w_est)
             end
             sg_est = obj.sg(w_est, i)   # stochastic gradient of w estimate
