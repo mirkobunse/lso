@@ -6,9 +6,10 @@ import Obj.Objective
     Performs Stochastic (Sub)Gradient Descent on objective function with
     initial w and the given Line Search function. Returns info DataFrame.
 """
-@fastmath function sgd(obj::Objective, w::Array{Float64,1}, ls::Function=bt;
+@fastmath function sgd(obj::Objective, w::Array{Float64,1}, ls::Function=sbt;
              batchSize::Int32=1,
              ϵ::Float64=1e-6, maxiter::Int32=1000, timeiter::Int32=100)
+
     inf = LsoBase.new_inf()
 
     # print info header
@@ -23,8 +24,9 @@ import Obj.Objective
 
         for k = 1:maxiter
 
-            fw = obj.f(w)
-            gw = sum([ obj.sg(w) for s=1:batchSize ]) ./ batchSize
+            i = obj.rng()   # random sgd index
+            fw = obj.sf(w, i)
+            gw = obj.sg(w, i)   # sum([ obj.sg(w) for s=1:batchSize ]) ./ batchSize
 
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
@@ -47,7 +49,7 @@ import Obj.Objective
                 break
             else
                 s = -gw # -g(w)
-                α, lsiter = ls(obj, w, s, fw, gw)
+                α, lsiter = ls(obj, w, s, i, fw, gw)
                 w += α*s
             end
 

@@ -6,13 +6,11 @@
     linreg(X, y).g(w) = X' * (X*w - y) / length(y)
 """
 linreg(X::Array{Float64,2}, y::Array{Float64,1}) = Objective(
-    w::Array{Float64,1} -> vecnorm(y - X*w)^2 / (2* length(y)),
-    w::Array{Float64,1} -> vec(X' * (X*w - y)) ./ length(y),
-    sg = function (w::Array{Float64,1})
-        i = rand(1:length(y))
-        return X[i,:]' * (X[i,:]*w - y[i])
-    end,
-    sgi = (w::Array{Float64,1}, i::Int32) -> X[i,:]' * (X[i,:]*w - y[i])
+    w::Array{Float64,1} -> vecnorm(y - X*w)^2 / (2* length(y)), # f
+    w::Array{Float64,1} -> vec(X' * (X*w - y)) ./ length(y),    # g
+    sf = (w::Array{Float64,1}, i::Int32) -> vecnorm(y[i] - X[i,:]*w)^2 / 2,
+    sg = (w::Array{Float64,1}, i::Int32) -> X[i,:]' * (X[i,:]*w - y[i]),
+    rng = _rng_sgd(y)
 )
 
 linreg_predict(w::Array{Float64,1}, X::Array{Float64,2}) = sign(vec(X*w))

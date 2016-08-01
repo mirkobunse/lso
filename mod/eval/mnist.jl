@@ -52,7 +52,7 @@ function mnist_gd_bt(; maxiter=10000, ϵ=1e-3)
     _mnist(Opt.gd, maxiter=maxiter, ϵ=ϵ)
 end
 
-function mnist_sgd_bt(; maxiter=10000, batchSize=1, ϵ=1e-2)
+function mnist_sgd_bt(; maxiter=10000, batchSize=1, ϵ=1e-9)
     _mnist(Opt.sgd, maxiter=maxiter, batchSize=batchSize, ϵ=ϵ)
 end
 
@@ -74,12 +74,15 @@ function _mnist(opt::Function; batchSize=1, maxiter=10000, timeiter=5, ϵ=1e-3)
     # tst
     w0 = zeros(784) # rand(784)
     inf = LsoBase.new_inf()
+    obj = Obj.logreg(X_train, y_train)
     try
-        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
+        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter, batchSize=batchSize)
     catch e
-        @time inf = opt(Obj.logreg(X_train, y_train), w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter)
+        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, timeiter=timeiter)
     end
     w = inf[end, :w]
+    f = obj.f(w)
+    println(@sprintf "\nf = %9.3e" f)
 
     # acc
     acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
