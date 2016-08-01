@@ -24,7 +24,7 @@ import Obj.Objective
 
         for k = 1:maxiter
 
-            i = obj.rng()   # random sgd index
+            i = obj.rng(batchSize)   # random sgd index
             fw = obj.sf(w, i)
             gw = obj.sg(w, i)   # sum([ obj.sg(w) for s=1:batchSize ]) ./ batchSize
 
