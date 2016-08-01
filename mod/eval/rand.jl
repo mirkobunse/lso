@@ -9,7 +9,7 @@ import Plotting
     Test GD with BT on Linear Regression of random data.
 """
 function rand_gd_bt_linreg(; maxiter=1000, n=100, m=1000)
-    _rand_linreg(Opt.gd, maxiter=maxiter, n=n, m=m)
+    _rand_linreg(Opt.gd, 1, maxiter, n, m)
 end
 
 """
@@ -18,7 +18,7 @@ end
     Test SGD with BT on Linear Regression of random data.
 """
 function rand_sgd_bt_linreg(; batchSize=1, maxiter=10000, n=100, m=1000)
-    _rand_linreg(Opt.sgd, batchSize=batchSize, maxiter=maxiter, n=n, m=m)
+    _rand_linreg(Opt.sgd, batchSize, maxiter, n, m)
 end
 
 function _rand_linreg(opt::Function, batchSize=1, maxiter=1000, n=100, m=1000)
@@ -94,7 +94,7 @@ function rand_gd_bt_logreg(maxiter=1000; n=100, m=1000, noisefac=4.8)
 
     # tst
     w0 = randn(n)
-    @time inf = Opt.gd(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, printiter=10)
+    @time inf = Opt.gd(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, timeiter=10)
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]
