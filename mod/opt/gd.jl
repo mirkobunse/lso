@@ -1,13 +1,13 @@
 import Obj.Objective
 
 """
-    gd(obj, w [, ls; ϵ, maxiter, printiter, maxtime])
+    gd(obj, w [, ls; ϵ, maxiter, storeiter, maxtime])
 
     Performs Steepest Descent on objective function with initial w and the
     given Line Search function. Returns info DataFrame.
 """
 @fastmath function gd(obj::Objective, w::Array{Float64,1}, ls::Function=bt;
-            ϵ::Float64=1e-6, maxiter::Int32=1000, printiter::Int32=5, maxtime::Int32=60)
+            ϵ::Float64=1e-6, maxiter::Int32=1000, storeiter::Int32=5, maxtime::Int32=60)
     inf = LsoBase.new_inf()
 
     # print info header
@@ -34,12 +34,11 @@ import Obj.Objective
                 break
             end
 
-            # print info
-            if (k-1)%printiter == 0
+            # store and print info
+            if (k-1)%storeiter == 0
                 println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter fw opt)
+                LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter, time)
             end 
-
-            LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter, time)
 
             # take step or stop
             if opt < ϵ # stopping criterion satisfied?

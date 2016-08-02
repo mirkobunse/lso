@@ -33,19 +33,19 @@ import Plotting
 
 
 
-function mnist_gd_bt(; maxiter=10000, maxtime=5, ϵ=1e-6)
+function mnist_gd_bt(; maxiter=10000, maxtime=60, ϵ=1e-3)
     _mnist(Opt.gd, maxiter=maxiter, maxtime=maxtime, ϵ=ϵ)
 end
 
-function mnist_sgd_sbt(; maxiter=10000, maxtime=10, batchsize=1, ϵ=1e-6)
-    _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, printiter=10, ϵ=ϵ)
+function mnist_sgd_sbt(; maxiter=10000, maxtime=60, batchsize=1, ϵ=0.0)
+    _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ)
 end
 
-function mnist_svrg_sbt(; maxiter=10000, maxtime=3, batchsize=1, estimation=10, strategy=:last, ϵ=1e-6)
-    _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, printiter=10, ϵ=ϵ)
+function mnist_svrg_sbt(; maxiter=10000, maxtime=60, batchsize=1, estimation=10, strategy=:avg, ϵ=1e-30)
+    _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, storeiter=500, ϵ=ϵ)
 end
 
-function _mnist(opt::Function; batchsize=1, estimation=10, strategy=:last, maxiter=10000, printiter=1, maxtime=3, ϵ=1e-3)
+function _mnist(opt::Function; batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3)
 
     println("Reading data...")
     X_train = readdlm("data/X_train.dlm")
@@ -59,14 +59,14 @@ function _mnist(opt::Function; batchsize=1, estimation=10, strategy=:last, maxit
     inf = LsoBase.new_inf()
     obj = Obj.logreg(X_train, y_train)
     try
-        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, printiter=printiter, maxtime=maxtime,
+        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
                         batchsize=batchsize, estimation=estimation, strategy=strategy)
     catch e
         try
-            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, printiter=printiter, maxtime=maxtime,
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
                             batchsize=batchsize)
         catch e
-            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, printiter=printiter, maxtime=maxtime)
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime)
         end
     end
     w = inf[end, :w]
