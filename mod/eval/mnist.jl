@@ -1,35 +1,35 @@
 using Colors
-using Images
-using ImageView
+# using Images
+# using ImageView
 
 import Opt
 import Obj
 import Plotting
 
-"""
-    mnist_img(row)
-    
-    Obtain the row of the MNIST data matrix as image.
-"""
-function mnist_img(row)
-    img = Images.grayim(convert( Images.Image{Gray}, reshape(row, (28,28)) ))
-    img["spatialorder"] = ["y", "x"]
-    return img
-end
-
-"""
-    mnist_view(img)
-    
-    View an image obtained by mnist_img.
-"""
-mnist_view(img) = ImageView.view(img) # xy=["y","x"])
-
-"""
-    mnist_saveview(filename, imgview)
-    
-    Save the image obtained by mnist_view(example)
-"""
-mnist_saveimg(filename, img) = Images.save(filename, img)
+# """
+#     mnist_img(row)
+#     
+#     Obtain the row of the MNIST data matrix as image.
+# """
+# function mnist_img(row)
+#     img = Images.grayim(convert( Images.Image{Gray}, reshape(row, (28,28)) ))
+#     img["spatialorder"] = ["y", "x"]
+#     return img
+# end
+# 
+# """
+#     mnist_view(img)
+#     
+#     View an image obtained by mnist_img.
+# """
+# mnist_view(img) = ImageView.view(img) # xy=["y","x"])
+# 
+# """
+#     mnist_saveview(filename, imgview)
+#     
+#     Save the image obtained by mnist_view(example)
+# """
+# mnist_saveimg(filename, img) = Images.save(filename, img)
 
 
 
