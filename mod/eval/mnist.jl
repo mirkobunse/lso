@@ -1,35 +1,35 @@
 using Colors
-# using Images
-# using ImageView
+using Images
+using ImageView
 
 import Opt
 import Obj
 import Plotting
 
-# """
-#     mnist_img(row)
-#     
-#     Obtain the row of the MNIST data matrix as image.
-# """
-# function mnist_img(row)
-#     img = Images.grayim(convert( Images.Image{Gray}, reshape(row, (28,28)) ))
-#     img["spatialorder"] = ["x", "y"]
-#     return img
-# end
+"""
+    mnist_img(row)
+    
+    Obtain the row of the MNIST data matrix as image.
+"""
+function mnist_img(row)
+    img = Images.grayim(convert( Images.Image{Gray}, reshape(row, (28,28)) ))
+    img["spatialorder"] = ["x", "y"]
+    return img
+end
 
-# """
-#     mnist_view(img)
-#     
-#     View an image obtained by mnist_img.
-# """
-# mnist_view(img) = ImageView.view(img) # xy=["y","x"])
+"""
+    mnist_view(img)
+    
+    View an image obtained by mnist_img.
+"""
+mnist_view(img) = ImageView.view(img) # xy=["y","x"])
 
-# """
-#     mnist_saveview(filename, imgview)
-#     
-#     Save the image obtained by mnist_view(example)
-# """
-# mnist_saveimg(filename, img) = Images.save(filename, img)
+"""
+    mnist_saveview(filename, imgview)
+    
+    Save the image obtained by mnist_view(example)
+"""
+mnist_saveimg(filename, img) = Images.save(filename, img)
 
 
 
@@ -53,6 +53,11 @@ function _mnist(opt::Function; batchsize=1, estimation=10, strategy=:last, maxit
     X_test  = readdlm("data/X_test.dlm")
     y_test  = vec(readdlm("data/y_test.dlm"))
     println("Data consists of $(size(X_train)[1]) training and $(size(X_test)[1]) test examples.")
+
+    for i in 1:10
+        mnist_view(mnist_img(X_train[i,:]))
+    end
+    return nothing
 
     # tst
     w0 = zeros(784) # rand(784)
