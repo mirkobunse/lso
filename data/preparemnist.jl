@@ -13,21 +13,33 @@ import MNIST
 
 function preparemnist(Xy, p_X, p_y, maxclasssize)
     X, y = Xy
-    X = X' # transpose for convenience
 
     # split into classes
-    X_a = X[(y.==6.0),:]
-    X_b = X[(y.==7.0),:]
-    classsize = min(size(X_a)[1], size(X_b)[1], maxclasssize)
-    println("Stratifying data to have 2 * $classsize examples (dimension $(size(X_a)[2]))...")
+    X_a = X[:,(y.==1.0)]
+    X_b = X[:,(y.==7.0)]
+
+    # cleanup
+    X = nothing
+    y = nothing
+    gc()
+
+    classsize = min(size(X_a)[2], size(X_b)[2], maxclasssize)
+    println("Stratifying data to have 2 * $classsize examples (dimension $(size(X_a)[1]))...")
 
     # subsample
-    X_a = X_a[randperm(size(X_a)[1])[1:classsize], :]
-    X_b = X_b[randperm(size(X_b)[1])[1:classsize], :]
+    X_a = X_a[:, randperm(size(X_a)[2])[1:classsize]]
+    X_b = X_b[:, randperm(size(X_b)[2])[1:classsize]]
+
+    # normalize and transpose for convenience
+    X_a = X_a' ./ 255.0
+    X_b = X_b' ./ 255.0
 
     # bring together
     y = vcat(repeat([1.0], inner=[classsize]), repeat([-1.0], inner=[classsize]))
     X = vcat(X_a, X_b)
+    X_a = nothing
+    X_b = nothing
+    gc()
 
     println("Shuffling...")
     perm = randperm(2*classsize)
@@ -41,11 +53,11 @@ end
 
 
 println("\nPreparing MNIST test data...")
-preparemnist(MNIST.traindata(), "./X_test.dlm", "./y_test.dlm", 166)
+preparemnist(MNIST.traindata(), "./X_test.dlm", "./y_test.dlm", 2500)
 gc()
 
 println("\nPreparing MNIST training data...")
-preparemnist(MNIST.traindata(),"./X_train.dlm", "./y_train.dlm", 333)
+preparemnist(MNIST.testdata(),"./X_train.dlm", "./y_train.dlm", 1000)
 
 println("\nDone.\n")
 return nothing
