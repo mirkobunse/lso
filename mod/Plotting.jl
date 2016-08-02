@@ -14,8 +14,8 @@ import Obj
 
     Like plot_inf(inf [, obj]), but instead of returning the plot, display it.
 """
-function display_inf(inf::DataFrame, obj=nothing)
-    Base.display(plot_inf(inf, obj))
+function display_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
+    Base.display(plot_inf(inf, obj, assumedgrad))
     return nothing
 end
 
@@ -25,8 +25,8 @@ end
 
     Like plot_inf(inf [, obj]), but instead of returning the plot, draw it to a file.
 """
-function draw_inf(inf::DataFrame, obj=nothing, filename::ASCIIString="out.pdf")
-    draw(PDF(filename, 15cm, 9cm), plot_inf(inf, obj))
+function draw_inf(inf::DataFrame, obj=nothing, assumedgrad=true, filename::ASCIIString="out.pdf")
+    draw(PDF(filename, 15cm, 9cm), plot_inf(inf, obj, assumedgrad))
 end
 
 
@@ -35,7 +35,7 @@ end
 
     Plot development of optimality and function value, as given by the DataFrame inf.
 """
-function plot_inf(inf::DataFrame, obj=nothing)
+function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
 
     f    = inf[:f]
     opt  = inf[:opt]
@@ -49,11 +49,6 @@ function plot_inf(inf::DataFrame, obj=nothing)
     df = vcat(
         DataFrame(
             x = inf[:iter],
-            y = inf[:opt],
-            name = [ "Assumed Opt." for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
-        ),
-        DataFrame(
-            x = inf[:iter],
             y = opt,
             name = [ "Optimality" for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
         ),
@@ -63,6 +58,22 @@ function plot_inf(inf::DataFrame, obj=nothing)
             name = [ "Function Value" for i=1:length(inf[:iter]) ]  # f(x)
         )
     )
+    colorscale = Scale.color_discrete_manual(LCHab{Float64}(65.0,70.0,0.0),
+                                             LCHab{Float64}(70.0,60.0,240.0),
+                                             order=[2,1])
+    if assumedgrad
+      df = vcat(df,
+          DataFrame(
+              x = inf[:iter],
+              y = inf[:opt],
+              name = [ "Assumed Opt." for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
+          )
+      )
+      colorscale = Scale.color_discrete_manual(LCHab{Float64}(65.0,70.0,0.0),
+                                               LCHab{Float64}(70.0,60.0,240.0),
+                                               LCHab{Float64}(93.7,125.2,100.43478260869566),
+                                               order=[2,1,3])
+    end
     return Gadfly.plot(df, x=:x, y=:y, color=:name, Geom.line,
                        Scale.y_log10(minvalue=1e-6, maxvalue=1e6), Scale.x_continuous(
                        labels = function (x)
@@ -80,10 +91,7 @@ function plot_inf(inf::DataFrame, obj=nothing)
                        end),
                        Guide.xticks(orientation=:horizontal),
                        Guide.xlabel("\n\nIteration\n (Time)"), Guide.ylabel(""), Guide.colorkey(""),
-                       Scale.color_discrete_manual(LCHab{Float64}(65.0,70.0,0.0),
-                                                   LCHab{Float64}(70.0,60.0,240.0),
-                                                   LCHab{Float64}(93.7,125.2,100.43478260869566),
-                                                   order=[3,2,1]))
+                       colorscale)
 end
 
 

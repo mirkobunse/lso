@@ -34,18 +34,19 @@ import Plotting
 
 
 function mnist_gd_bt(; maxiter=10000, maxtime=60, ϵ=1e-3)
-    _mnist(Opt.gd, maxiter=maxiter, maxtime=maxtime, ϵ=ϵ)
+    _mnist(Opt.gd, maxiter=maxiter, maxtime=maxtime, ϵ=ϵ, assumedgrad=false)
 end
 
-function mnist_sgd_sbt(; maxiter=10000, maxtime=60, batchsize=1, ϵ=0.0)
-    _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ)
+function mnist_sgd_sbt(; maxiter=100000, maxtime=60, batchsize=1, ϵ=0.0)
+    _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ, assumedgrad=false)
 end
 
 function mnist_svrg_sbt(; maxiter=10000, maxtime=60, batchsize=1, estimation=10, strategy=:avg, ϵ=1e-30)
-    _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, storeiter=500, ϵ=ϵ)
+    _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, storeiter=100, ϵ=ϵ, assumedgrad=true)
 end
 
-function _mnist(opt::Function; batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3)
+function _mnist(opt::Function;
+                batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3, assumedgrad=true)
 
     println("Reading data...")
     X_train = readdlm("data/X_train.dlm")
@@ -82,13 +83,13 @@ function _mnist(opt::Function; batchsize=1, estimation=10, strategy=:last, maxit
     # ask user for plot
     print("\nPlot progress? (y/N): ")
     if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf, obj)
+        Plotting.display_inf(inf, obj, assumedgrad)
 
         optname = methods(opt).name
         outfile = "./mnist_$optname$batchsize.pdf"
         print("\nDraw to $outfile? (y/N): ")
         if startswith(readline(STDIN), "y")
-            Plotting.draw_inf(inf, obj, outfile)
+            Plotting.draw_inf(inf, obj, assumedgrad, outfile)
         end
 
         # print("\nShow weight vector? (y/N): ")
