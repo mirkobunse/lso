@@ -1,7 +1,7 @@
 import Obj.Objective
 
 """
-    svrg(obj, w [, ls; batchsize, estimation, strategy, ϵ, maxiter, timeiter, maxtime])
+    svrg(obj, w [, ls; batchsize, estimation, strategy, ϵ, maxiter, printiter, maxtime])
 
     Performs SVRG (Stochastic Variance-Reduced Gradient Descent) on objective function with
     initial w and the given Line Search function. Returns info DataFrame.
@@ -15,7 +15,7 @@ import Obj.Objective
 """
 @fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::Function=sbt;
              batchsize::Int32=1, estimation::Int32=10, strategy::Symbol=:last,
-             ϵ::Float64=1e-6, maxiter::Int32=1000, timeiter::Int32=100, maxtime::Int32=60)
+             ϵ::Float64=1e-6, maxiter::Int32=1000, printiter::Int32=100, maxtime::Int32=60)
 
     inf = LsoBase.new_inf()
 
@@ -54,13 +54,15 @@ import Obj.Objective
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
 
-            # update time and print info
-            if (k-1) % timeiter == 0
-                time = Base.time() - start
+            # update time
+            time = Base.time() - start
+            if time > maxtime
+                break
+            end
+
+            # print info
+            if (k-1)%printiter == 0
                 println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter fw opt)
-                if time > maxtime
-                    break
-                end
             end 
 
             LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter, time)

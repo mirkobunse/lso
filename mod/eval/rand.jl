@@ -94,7 +94,7 @@ function rand_gd_bt_logreg(maxiter=1000; n=100, m=1000, noisefac=4.8)
 
     # tst
     w0 = randn(n)
-    @time inf = Opt.gd(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, timeiter=10)
+    @time inf = Opt.gd(Obj.logreg(X_train, y_train), w0, ϵ=1e-3, maxiter=maxiter, printiter=10)
     w = inf[end, :w]
     iter = inf[end, :iter]
     opt = inf[end, :opt]
