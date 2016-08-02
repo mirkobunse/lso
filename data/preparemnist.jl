@@ -11,24 +11,25 @@
 # Pkg.add("MNIST")
 import MNIST
 
-function preparemnist(Xy, p_X, p_y, maxnumones)
+function preparemnist(Xy, p_X, p_y, maxclasssize)
     X, y = Xy
     X = X' # transpose for convenience
 
-    # recode labels: "1.0" vs all
-    X_one = X[(y.==1.0),:]
-    X_all = X[(y.!=1.0),:]
-    numones = min(size(X_one)[1], maxnumones)
+    # recode labels
+    X_a = X[(y.==1.0),:]
+    X_b = X[(y.==2.0),:]
+    classsize = min(size(X_a)[1], size(X_b)[1], maxclasssize)
 
-    println("Stratifying data to have 2 * $numones examples...")
-    X_all = X_all[randperm(size(X_all)[1])[1:numones], :]
+    println("Stratifying data to have 2 * $classsize examples...")
+    X_a = X_a[randperm(size(X_a)[1])[1:classsize], :]
+    X_b = X_b[randperm(size(X_b)[1])[1:classsize], :]
 
     # bring together
-    y = vcat(repeat([1.0], inner=[numones]), repeat([-1.0], inner=[numones]))
-    X = vcat(X_one, X_all)
+    y = vcat(repeat([1.0], inner=[classsize]), repeat([-1.0], inner=[classsize]))
+    X = vcat(X_a, X_b)
 
     println("Shuffling...")
-    perm = randperm(2*numones)
+    perm = randperm(2*classsize)
     X = X[perm,:]
     y = y[perm]
 
@@ -37,11 +38,12 @@ function preparemnist(Xy, p_X, p_y, maxnumones)
     writedlm(p_y, y)
 end
 
-println("\nPreparing MNIST training data...")
-preparemnist(MNIST.testdata(),"./X_train.dlm", "./y_train.dlm", 1000)
 
 println("\nPreparing MNIST test data...")
-preparemnist(MNIST.traindata(), "./X_test.dlm", "./y_test.dlm", 5000)
+preparemnist(MNIST.traindata(), "./X_test.dlm", "./y_test.dlm", 2500)
+
+println("\nPreparing MNIST training data...")
+preparemnist(MNIST.testdata(),"./X_train.dlm", "./y_train.dlm", 500)
 
 println("\nDone.\n")
 return nothing
