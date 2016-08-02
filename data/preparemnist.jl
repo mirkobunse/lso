@@ -11,17 +11,27 @@
 # Pkg.add("MNIST")
 import MNIST
 
-function preparemnist(p_X, p_y, Xy)
+function preparemnist(Xy, p_X, p_y, maxclasssize)
     X, y = Xy
+    X = X' # transpose for convenience
 
-    println("Selecting subset...")
-    select = convert(BitArray{1}, [ yi == 1.0 || yi == 7.0 for yi in y ])
-    X = X[:, select]'
-    y = y[select]
+    # split into classes
+    X_a = X[(y.==6.0),:]
+    X_b = X[(y.==7.0),:]
+    classsize = min(size(X_a)[1], size(X_b)[1], maxclasssize)
+    println("Stratifying data to have 2 * $classsize examples (dimension $(size(X_a)[2]))...")
+
+    # subsample
+    X_a = X_a[randperm(size(X_a)[1])[1:classsize], :]
+    X_b = X_b[randperm(size(X_b)[1])[1:classsize], :]
+
+    # bring together
+    y = vcat(repeat([1.0], inner=[classsize]), repeat([-1.0], inner=[classsize]))
+    X = vcat(X_a, X_b)
 
     println("Shuffling...")
-    perm = randperm(length(y))
-    X = X[perm, :]
+    perm = randperm(2*classsize)
+    X = X[perm,:]
     y = y[perm]
 
     println("Storing data into $p_X and $p_y...")
@@ -29,13 +39,13 @@ function preparemnist(p_X, p_y, Xy)
     writedlm(p_y, y)
 end
 
-println("\nPreparing MNIST training data...")
-preparemnist("./X_train.dlm", "./y_train.dlm", MNIST.traindata())
-gc()    # cleanup
 
 println("\nPreparing MNIST test data...")
-preparemnist("./X_test.dlm", "./y_test.dlm", MNIST.testdata())
-gc()    # cleanup
+preparemnist(MNIST.traindata(), "./X_test.dlm", "./y_test.dlm", 166)
+gc()
+
+println("\nPreparing MNIST training data...")
+preparemnist(MNIST.traindata(),"./X_train.dlm", "./y_train.dlm", 333)
 
 println("\nDone.\n")
 return nothing
