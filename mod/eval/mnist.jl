@@ -41,7 +41,7 @@ function mnist_sgd_sbt(; maxiter=100000, maxtime=60, batchsize=1, ϵ=0.0)
     _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ, assumedgrad=false)
 end
 
-function mnist_svrg_sbt(; maxiter=10000, maxtime=60, batchsize=1, estimation=10, strategy=:avg, ϵ=1e-30)
+function mnist_svrg_sbt(; maxiter=10000, maxtime=60, batchsize=10, estimation=10, strategy=:avg, ϵ=1e-3)
     _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, storeiter=100, ϵ=ϵ, assumedgrad=true)
 end
 

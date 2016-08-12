@@ -41,13 +41,18 @@ function mnist_sgd_sbt_ensemble(; maxiter=100000, maxtime=60, batchsize=1, ϵ=0.
     _mnist_ensemble(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ, assumedgrad=false)
 end
 
-function mnist_svrg_sbt_ensemble(; maxiter=10000, maxtime=60, batchsize=1, estimation=10, strategy=:avg, ϵ=1e-30)
+function mnist_svrg_sbt_ensemble(; maxiter=10000, maxtime=60, batchsize=1, estimation=100, strategy=:avg, ϵ=1e-30)
     _mnist_ensemble(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, storeiter=100, ϵ=ϵ, assumedgrad=true)
 end
 
 function _mnist_ensemble(opt::Function;
                 batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3, assumedgrad=true,
                 frac1=.5)
+
+
+    ################
+    # DATA
+    ################
 
     println("Reading data...")
     X_train = readdlm("data/X_train.dlm")
@@ -61,11 +66,14 @@ function _mnist_ensemble(opt::Function;
     ################
     # ITERATION 1
     ################
+
+    # random subset of relative size frac1
     train1 = randperm(length(y_train))[1:convert(Int32, floor(frac1*length(y_train)))]
     X_train1 = X_train[train1,:]
     y_train1 = y_train[train1]
     println("\n1st iteration considers $(size(X_train1)[1]) training examples.")
 
+    # optimize
     w0 = zeros(784) # rand(784)
     inf1 = LsoBase.new_inf()
     obj1 = Obj.logreg(X_train1, y_train1)
@@ -89,38 +97,20 @@ function _mnist_ensemble(opt::Function;
     println("Test set acc in 1st iteration: $acc_test1")
 
 
-    # preparation for iteration 2
-    y_pred1 = Obj.logreg_predict(w1, X_train)
-    correct1 = shuffle(find(y_train .== y_pred1))
-    false1   = shuffle(find(y_train .!= y_pred1))
-    println("\nThere are $(length(correct1)) correct and $(length(false1)) false predictions in 1st iteration.")
-
-    # find subset that is classified with 50% acc
-    train2size = min(length(correct1), length(false1))
-    train2indices = vcat(correct1[1:train2size], false1[1:train2size])
-    X_train2 = getindex(X_train, train2indices, :)
-    y_train2 = getindex(y_train, train2indices)
-    println("2nd iteration will consider $(size(X_train2)[1]) training examples.")
-
-
-    # ask user for plot
-    print("\nPlot progress of 1st iteration? (y/N): ")
-    if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf1, obj1, assumedgrad)
-
-        optname = methods(opt).name
-        outfile = "./mnist_$optname$(batchsize)_1.pdf"
-        print("\nDraw to $outfile? (y/N): ")
-        if startswith(readline(STDIN), "y")
-            Plotting.draw_inf(inf1, obj1, assumedgrad, outfile)
-        end
-    end
-
-
 
     ################
     # ITERATION 2
     ################
+
+    # find subset that is classified with 50% acc
+    y_pred1 = Obj.logreg_predict(w1, X_train)
+    correct1 = shuffle(find(y_train .== y_pred1))
+    false1   = shuffle(find(y_train .!= y_pred1))
+    train2size = min(length(correct1), length(false1))
+    train2indices = vcat(correct1[1:train2size], false1[1:train2size])
+    X_train2 = getindex(X_train, train2indices, :)
+    y_train2 = getindex(y_train, train2indices)
+    println("\n2nd iteration will consider $(size(X_train2)[1]) training examples.")
 
     # optimize
     inf2 = LsoBase.new_inf()
@@ -145,38 +135,17 @@ function _mnist_ensemble(opt::Function;
     println("Test set acc in 2nd iteration: $acc_test2")
 
 
-    # preparation for iteration 2
-    y_pred2 = Obj.logreg_predict(w2, X_train)
-    correct2 = shuffle(find(y_train .== y_pred2))
-    false2   = shuffle(find(y_train .!= y_pred2))
-    println("\nThere are $(length(correct2)) correct and $(length(false2)) false predictions in 2nd iteration.")
-
-    # find subset for which predictors decide differently
-    different = (y_pred1 .!= y_pred2)
-    println("The two classifiers decide differently for $(sum(different)) examples.")
-    X_train3 = X_train[different, :]
-    y_train3 = y_train[different]
-    println("3rd iteration will consider $(size(X_train3)[1]) training examples.")
-
-
-    # ask user for plot
-    print("\nPlot progress of 2nd iteration? (y/N): ")
-    if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf2, obj2, assumedgrad)
-
-        optname = methods(opt).name
-        outfile = "./mnist_$optname$(batchsize)_2.pdf"
-        print("\nDraw to $outfile? (y/N): ")
-        if startswith(readline(STDIN), "y")
-            Plotting.draw_inf(inf2, obj2, assumedgrad, outfile)
-        end
-    end
-
-
 
     ################
     # ITERATION 3
     ################
+
+    # find subset for which predictors decide differently
+    y_pred2 = Obj.logreg_predict(w2, X_train)
+    different = (y_pred1 .!= y_pred2)
+    X_train3 = X_train[different, :]
+    y_train3 = y_train[different]
+    println("\n3rd iteration will consider $(size(X_train3)[1]) training examples.")
 
     # optimize
     inf3 = LsoBase.new_inf()
@@ -200,40 +169,32 @@ function _mnist_ensemble(opt::Function;
     println("\nTraining set acc in 3rd iteration: $acc_train3")
     println("Test set acc in 3rd iteration: $acc_test3")
 
-    # ask user for plot
-    print("\nPlot progress of 3rd iteration? (y/N): ")
-    if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf3, obj3, assumedgrad)
-
-        optname = methods(opt).name
-        outfile = "./mnist_$optname$(batchsize)_3.pdf"
-        print("\nDraw to $outfile? (y/N): ")
-        if startswith(readline(STDIN), "y")
-            Plotting.draw_inf(inf3, obj3, assumedgrad, outfile)
-        end
-    end
-
 
 
     ################
     # MAJORITY VOTE
     ################
+
+    # training prediction
     y_trainpred1 = Obj.logreg_predict(w1, X_train)
     y_trainpred2 = Obj.logreg_predict(w2, X_train)
     y_trainpred3 = Obj.logreg_predict(w3, X_train)
     y_trainpred  = vec(sign(sum([y_trainpred1 y_trainpred2 y_trainpred3], 2)))
 
+    # test prediction
     y_testpred1  = Obj.logreg_predict(w1, X_test)
     y_testpred2  = Obj.logreg_predict(w2, X_test)
     y_testpred3  = Obj.logreg_predict(w3, X_test)
     y_testpred   = vec(sign(sum([y_testpred1 y_testpred2 y_testpred3], 2)))
 
+    # acc
     acc_train = LsoBase.acc(y_train, y_trainpred)
     acc_test  = LsoBase.acc(y_test, y_testpred)
     timesum   = sum([inf1[end, :time], inf2[end, :time], inf3[end, :time]])
     println("\nOverall Training set acc: $acc_train")
     println("Overall Test set acc: $acc_test")
 
+    # conclusion
     headline = @sprintf "\n\n%16s | %10s | %10s | %10s"  "Decision" "Train Acc" "Test Acc" "Time (s)"
     println(headline, "\n", repeat("-", length(headline)))
     println(@sprintf "%16s | %10.3f | %10.3f | %10.3f" "1st Classifier" acc_train1 acc_test1 inf1[end, :time])
@@ -242,6 +203,30 @@ function _mnist_ensemble(opt::Function;
     println(@sprintf "%16s | %10.3f | %10.3f | %10.3f" "Majority Vote"  acc_train  acc_test  timesum)
     println("")
 
+
+
+    ################
+    # PLOTTING
+    ################
+    print("\nPlot combined progress? (y/N): ")
+    if startswith(readline(STDIN), "y")
+        inf2[:time] += inf1[end, :time]
+        inf2[:iter] += inf1[end, :iter]
+        inf3[:time] += inf2[end, :time]
+        inf3[:iter] += inf2[end, :iter]
+        inf = vcat(inf1, inf2, inf3)
+        Plotting.display_inf(inf, Obj.logreg(X_train, y_train), assumedgrad)
+
+        optname = methods(opt).name
+        outfile = "./mnist_$optname$(batchsize)_ensemble.pdf"
+        print("\nDraw to $outfile? (y/N): ")
+        if startswith(readline(STDIN), "y")
+            Plotting.draw_inf(inf, Obj.logreg(X_train, y_train), assumedgrad, outfile)
+        end
+    end
+
+
     return nothing
+
 
 end
