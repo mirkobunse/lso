@@ -25,7 +25,7 @@ function rosenbrock_gd_bt(maxiter::Int32=10000) # 1e5
     # ask user for plot
     print("\nPlot progress? (y/N): ")
     if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf)
+        Plotting.display_plot(Plotting.plot_inf(inf))
     end
     return nothing # inf
     

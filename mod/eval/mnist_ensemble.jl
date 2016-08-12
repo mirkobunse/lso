@@ -215,13 +215,14 @@ function _mnist_ensemble(opt::Function;
         inf3[:time] += inf2[end, :time]
         inf3[:iter] += inf2[end, :iter]
         inf = vcat(inf1, inf2, inf3)
-        Plotting.display_inf(inf, Obj.logreg(X_train, y_train), assumedgrad)
+        plot = Plotting.plot_inf(inf, Obj.logreg(X_train, y_train), assumedgrad)
+        Plotting.display_plot(plot)
 
         optname = methods(opt).name
         outfile = "./mnist_$optname$(batchsize)_ensemble.pdf"
         print("\nDraw to $outfile? (y/N): ")
         if startswith(readline(STDIN), "y")
-            Plotting.draw_inf(inf, Obj.logreg(X_train, y_train), assumedgrad, outfile)
+            Plotting.draw_plot(plot, outfile)
         end
     end
 

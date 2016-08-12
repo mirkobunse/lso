@@ -51,7 +51,7 @@ function _rand_linreg(opt::Function, batchsize=1, maxiter=1000, n=100, m=1000)
     # ask user for plot
     print("\nPlot progress? (y/N): ")
     if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf)
+        Plotting.display_plot(Plotting.plot_inf(inf))
     end
     return nothing # inf
 
@@ -108,7 +108,7 @@ function rand_gd_bt_logreg(maxiter=1000; n=100, m=1000, noisefac=4.8)
     # ask user for plot
     print("\nPlot progress? (y/N): ")
     if startswith(readline(STDIN), "y")
-        Plotting.display_inf(inf)
+        Plotting.display_plot(Plotting.plot_inf(inf))
     end
     return nothing # inf
 

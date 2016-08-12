@@ -10,23 +10,23 @@ import Obj
 
 
 """
-    display_inf(inf [, obj])
+    display_plot(plot)
 
-    Like plot_inf(inf [, obj]), but instead of returning the plot, display it.
+    Display plot the default way (e.g., in browser).
 """
-function display_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
-    Base.display(plot_inf(inf, obj, assumedgrad))
+function display_plot(plot)
+    Base.display(plot)
     return nothing
 end
 
 
 """
-    draw_inf(inf [, obj, filename])
+    draw_plot(plot [, filename])
 
-    Like plot_inf(inf [, obj]), but instead of returning the plot, draw it to a file.
+    Draw plot to file.
 """
-function draw_inf(inf::DataFrame, obj=nothing, assumedgrad=true, filename::ASCIIString="out.pdf")
-    draw(PDF(filename, 15cm, 9cm), plot_inf(inf, obj, assumedgrad))
+function draw_plot(plot, filename::ASCIIString="out.pdf")
+    draw(PDF(filename, 15cm, 9cm), plot)
 end
 
 
@@ -34,6 +34,7 @@ end
     plot_inf(inf)
 
     Plot development of optimality and function value, as given by the DataFrame inf.
+    Returns Gadfly plot object.
 """
 function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
 
