@@ -215,7 +215,8 @@ function _mnist_ensemble(opt::Function;
         inf3[:time] += inf2[end, :time]
         inf3[:iter] += inf2[end, :iter]
         inf = vcat(inf1, inf2, inf3)
-        plot = Plotting.plot_inf(inf, Obj.logreg(X_train, y_train), assumedgrad)
+        vlines = [inf1[end, :time], inf2[end, :time], inf3[end, :time]]
+        plot = Plotting.plot_inf(inf, Obj.logreg(X_train, y_train), assumedgrad, vlines=vlines)
         Plotting.display_plot(plot)
 
         optname = methods(opt).name
