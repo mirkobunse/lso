@@ -15,8 +15,8 @@ function preparemnist(Xy, p_X, p_y, maxclasssize)
     X, y = Xy
 
     # split into classes
-    X_a = X[:,(y.==1.0)]
-    X_b = X[:,(y.!=1.0)]
+    X_a = X[:,(y.==7.0)]
+    X_b = X[:,(y.!=7.0)]
 
     # cleanup
     X = nothing
