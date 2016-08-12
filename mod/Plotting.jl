@@ -48,14 +48,14 @@ function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
     println("Plotting...")
     df = vcat(
         DataFrame(
-            x = inf[:iter],
+            x = inf[:time],
             y = opt,
-            name = [ "Optimality" for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
+            name = [ "Optimality" for i=1:length(inf[:time]) ]  # ‖∇f(x)‖∞
         ),
         DataFrame(
-            x = inf[:iter],
+            x = inf[:time],
             y = f,
-            name = [ "Function Value" for i=1:length(inf[:iter]) ]  # f(x)
+            name = [ "Function Value" for i=1:length(inf[:time]) ]  # f(x)
         )
     )
     colorscale = Scale.color_discrete_manual(LCHab{Float64}(65.0,70.0,0.0),
@@ -64,9 +64,9 @@ function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
     if assumedgrad
       df = vcat(df,
           DataFrame(
-              x = inf[:iter],
+              x = inf[:time],
               y = inf[:opt],
-              name = [ "Assumed Opt." for i=1:length(inf[:iter]) ]  # ‖∇f(x)‖∞
+              name = [ "Assumed Opt." for i=1:length(inf[:time]) ]  # ‖∇f(x)‖∞
           )
       )
       colorscale = Scale.color_discrete_manual(LCHab{Float64}(65.0,70.0,0.0),
@@ -75,22 +75,22 @@ function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true)
                                                order=[2,1,3])
     end
     return Gadfly.plot(df, x=:x, y=:y, color=:name, Geom.line,
-                       Scale.y_log10(minvalue=1e-6, maxvalue=1e6), Scale.x_continuous(
-                       labels = function (x)
-                           label::ASCIIString = @sprintf "%6d" x
-                           times = inf[ inf[:iter] .== x, :time ]
-                           if length(times) > 0
-                               label *= @sprintf "\n%6.3fs" times[end]
-                           else
-                               times = inf[ inf[:iter] .<= x, :time ]
-                               if length(times) > 0
-                                   label *= @sprintf "\n(%6d:\n%6.3fs)" inf[end, :iter] times[end]
-                               end
-                           end
-                           return label
-                       end),
+                       Scale.y_log10(minvalue=1e-6, maxvalue=1e6), Scale.x_continuous(labels = (x -> @sprintf "%6ds" x)),
+                       # labels = function (x)
+                       #     label::ASCIIString = @sprintf "%6ds" x
+                       #     iters = inf[ inf[:time] .>= x, :iter ]
+                       #     if length(iters) > 0
+                       #         label *= @sprintf "\n(%d)" iters[1]
+                       #     # else
+                       #     #     iters = inf[ inf[:time] .<= x, :iter ]
+                       #     #     if length(iters) > 0
+                       #     #         label *= @sprintf "\n(%6d:\n%6.3fs)" inf[end, :time] iters[end]
+                       #     #     end
+                       #     end
+                       #     return label
+                       # end),
                        Guide.xticks(orientation=:horizontal),
-                       Guide.xlabel("\n\nIteration\n (Time)"), Guide.ylabel(""), Guide.colorkey(""),
+                       Guide.xlabel("\n\n   Time  \n(Iteration)"), Guide.ylabel(""), Guide.colorkey(""),
                        colorscale)
 end
 
