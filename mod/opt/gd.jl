@@ -18,6 +18,8 @@ import Obj.Objective
     lsiter = 0
     start = Base.time()
     time = 0.0
+    minopt = Inf
+    maxf   = -Inf
     try 
 
         for k = 1:maxiter
@@ -35,9 +37,13 @@ import Obj.Objective
             end
 
             # store and print info
+            maxf =   max(fw,  maxf)
+            minopt = min(opt, minopt)
             if (k-1)%storeiter == 0
-                println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter fw opt)
-                LsoBase.push_inf!(inf, w, fw, opt, k-1, lsiter, time)
+                println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter maxf minopt)
+                LsoBase.push_inf!(inf, w, maxf, minopt, k-1, lsiter, time)
+                minopt = Inf
+                maxf   = -Inf
             end 
 
             # take step or stop
