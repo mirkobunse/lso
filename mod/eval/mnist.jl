@@ -38,15 +38,15 @@ function mnist_gd_bt(; maxiter=10000, maxtime=60, ϵ=1e-3)
 end
 
 function mnist_sgd_sbt(; maxiter=100000, maxtime=60, batchsize=10, ϵ=0.0)
-    _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ, assumedgrad=false)
+    _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, ϵ=ϵ, assumedgrad=false)
 end
 
 function mnist_svrg_sbt(; maxiter=10000, maxtime=60, batchsize=10, estimation=10, strategy=:avg, ϵ=1e-3)
-    _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, storeiter=100, ϵ=ϵ, assumedgrad=true)
+    _mnist(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, ϵ=ϵ, assumedgrad=true)
 end
 
 function _mnist(opt::Function;
-                batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3, assumedgrad=true)
+                batchsize=1, estimation=10, strategy=:last, maxiter=10000, maxtime=30, ϵ=1e-3, assumedgrad=true)
 
     srand(1337)
 
@@ -62,14 +62,14 @@ function _mnist(opt::Function;
     inf = LsoBase.new_inf()
     obj = Obj.logreg(X_train, y_train)
     try
-        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
                         batchsize=batchsize, estimation=estimation, strategy=strategy)
     catch e
         try
-            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
                             batchsize=batchsize)
         catch e
-            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime)
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, maxtime=maxtime)
         end
     end
     w = inf[end, :w]

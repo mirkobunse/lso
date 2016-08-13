@@ -19,7 +19,7 @@ import Ls.LineSearch
 """
 @fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::LineSearch=Ls.sbt(obj);
              batchsize::Int32=1, estimation::Int32=10, strategy::Symbol=:last,
-             ϵ::Float64=1e-6, maxiter::Int32=1000, storeiter::Int32=100, maxtime::Int32=60)
+             ϵ::Float64=1e-6, maxiter::Int32=1000, maxtime::Int32=60)
 
     inf = LsoBase.new_inf()
 
@@ -30,7 +30,7 @@ import Ls.LineSearch
     # optimization
     lsiter::Int32 = 0
     start = Base.time()
-    time = 0.0
+    storagetime = 0.0
     minopt = Inf
     maxf   = -Inf
     w_est = nothing  # w estimate (will be set on first iteration)
@@ -60,24 +60,22 @@ import Ls.LineSearch
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
 
-            # update time
-            time = Base.time() - start
-            if time > maxtime
-                break
-            end
-
             # store and print info
-            maxf =   max(fw,  maxf)
+            time   = Base.time() - start
+            maxf   = max(fw,  maxf)
             minopt = min(opt, minopt)
-            if (k-1)%storeiter == 0
+            if time - storagetime > .25 || k == 1 || time > maxtime
                 println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter maxf minopt)
                 LsoBase.push_inf!(inf, w, maxf, minopt, k-1, lsiter, time)
+                storagetime = floor(time*4) / 4
                 minopt = Inf
                 maxf   = -Inf
-            end 
+            end
 
             # take step or stop
-            if opt < ϵ # stopping criterion satisfied?
+            if time > maxtime # max time over?
+                break
+            elseif opt < ϵ # stopping criterion satisfied?
                 break
             else
                 s = -gw + gw_est_b - gw_est # -g(w) + g(w_est) - μ
