@@ -49,6 +49,7 @@ function _mnist_ensemble(opt::Function;
                 batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3, assumedgrad=true,
                 frac1=.5)
 
+    srand(1337)
 
     ################
     # DATA

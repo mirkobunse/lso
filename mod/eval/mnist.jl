@@ -48,6 +48,8 @@ end
 function _mnist(opt::Function;
                 batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3, assumedgrad=true)
 
+    srand(1337)
+
     println("Reading data...")
     X_train = readdlm("data/X_train.dlm")
     y_train = vec(readdlm("data/y_train.dlm"))

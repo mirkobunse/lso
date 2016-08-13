@@ -9,6 +9,8 @@ import Plotting
 """
 function rosenbrock_gd_bt(maxiter::Int32=10000) # 1e5
 
+    srand(1337)
+
     # init rosenbrock function
     rosenbrock = Obj.Objective(
         w::Array{Float64,1} -> 100*(w[2]-w[1]^2)^2 + (1-w[1])^2,

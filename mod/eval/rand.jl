@@ -22,6 +22,9 @@ function rand_sgd_bt_linreg(; batchsize=1, maxiter=10000, n=100, m=1000)
 end
 
 function _rand_linreg(opt::Function, batchsize=1, maxiter=1000, n=100, m=1000)
+
+    srand(1337)
+
     # init random data
     w_true = randn(n)
     X = randn(m,n)
@@ -65,6 +68,7 @@ end
 """
 function rand_gd_bt_logreg(maxiter=1000; n=100, m=1000, noisefac=4.8)
 
+    srand(1337)
     m2 = convert(Int32, m/2)    # m/2 as integer
 
     # init classes
