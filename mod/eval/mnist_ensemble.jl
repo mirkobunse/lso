@@ -90,12 +90,14 @@ function _mnist_ensemble(opt::Function;
         end
     end
     w1 = inf1[end, :w]
+    iterrate1 = inf1[end, :iter] / inf1[end, :time]
 
     # acc
     acc_train1 = LsoBase.acc(y_train1, Obj.logreg_predict(w1, X_train1))
     acc_test1  = LsoBase.acc(y_test, Obj.logreg_predict(w1, X_test))
-    println("\nTraining set acc in 1st iteration: $acc_train1")
-    println("Test set acc in 1st iteration: $acc_test1")
+    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train1)
+    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test1)
+    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate1)
 
 
 
@@ -128,12 +130,14 @@ function _mnist_ensemble(opt::Function;
         end
     end
     w2 = inf2[end, :w]
+    iterrate2 = inf2[end, :iter] / inf2[end, :time]
 
     # acc
     acc_train2 = LsoBase.acc(y_train2, Obj.logreg_predict(w2, X_train2))
     acc_test2  = LsoBase.acc(y_test, Obj.logreg_predict(w2, X_test))
-    println("\nTraining set acc in 2nd iteration: $acc_train2")
-    println("Test set acc in 2nd iteration: $acc_test2")
+    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train2)
+    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test2)
+    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate2)
 
 
 
@@ -163,12 +167,14 @@ function _mnist_ensemble(opt::Function;
         end
     end
     w3 = inf3[end, :w]
+    iterrate3 = inf3[end, :iter] / inf3[end, :time]
 
     # acc
     acc_train3 = LsoBase.acc(y_train3, Obj.logreg_predict(w3, X_train3))
     acc_test3  = LsoBase.acc(y_test, Obj.logreg_predict(w3, X_test))
-    println("\nTraining set acc in 3rd iteration: $acc_train3")
-    println("Test set acc in 3rd iteration: $acc_test3")
+    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train3)
+    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test3)
+    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate3)
 
 
 
@@ -192,16 +198,19 @@ function _mnist_ensemble(opt::Function;
     acc_train = LsoBase.acc(y_train, y_trainpred)
     acc_test  = LsoBase.acc(y_test, y_testpred)
     timesum   = sum([inf1[end, :time], inf2[end, :time], inf3[end, :time]])
-    println("\nOverall Training set acc: $acc_train")
-    println("Overall Test set acc: $acc_test")
+    numexamples = size(unique(vcat(X_train1, X_train2, X_train3), 1))[1]
+    meaniterrate = mean([iterrate1, iterrate2, iterrate3])
+    println(@sprintf "\n%30s: %8.4f" "Overall Training set acc" acc_train)
+    println(@sprintf   "%30s: %8.4f" "Overall Test set acc"     acc_test)
+    println(@sprintf   "%30s: %8d"   "Overall # examples"       numexamples)
 
     # conclusion
-    headline = @sprintf "\n\n%16s | %10s | %10s | %10s"  "Decision" "Train Acc" "Test Acc" "Time (s)"
+    headline = @sprintf "\n\n%16s | %10s | %10s | %10s | %10s | %10s" "Decision" "Train Acc" "Test Acc" "Time (s)" "Train Size" "Iter / sec"
     println(headline, "\n", repeat("-", length(headline)))
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f" "1st Classifier" acc_train1 acc_test1 inf1[end, :time])
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f" "2nd Classifier" acc_train2 acc_test2 inf2[end, :time])
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f" "3rd Classifier" acc_train3 acc_test3 inf3[end, :time])
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f" "Majority Vote"  acc_train  acc_test  timesum)
+    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "1st Classifier" acc_train1 acc_test1 inf1[end, :time] size(X_train1)[1] iterrate1)
+    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "2nd Classifier" acc_train2 acc_test2 inf2[end, :time] size(X_train2)[1] iterrate2)
+    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "3rd Classifier" acc_train3 acc_test3 inf3[end, :time] size(X_train3)[1] iterrate3)
+    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "Majority Vote"  acc_train  acc_test  timesum          numexamples       meaniterrate)
     println("")
 
 

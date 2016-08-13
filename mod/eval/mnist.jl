@@ -73,14 +73,14 @@ function _mnist(opt::Function;
         end
     end
     w = inf[end, :w]
-    f = obj.f(w)
-    println(@sprintf "\nf = %9.3e" f)
+    iterrate = inf[end, :iter] / inf[end, :time]
 
     # acc
     acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
     acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
-    println("\nTraining set accuracy: $acc_train")
-    println("\nTest set accuracy: $acc_test")
+    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train)
+    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test)
+    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate)
 
     # ask user for plot
     print("\nPlot progress? (y/N): ")
