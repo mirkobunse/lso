@@ -28,13 +28,17 @@ end
 @fastmath function _bt(obj::Objective, w::Array{Float64,1}, s::Array{Float64,1},
                        fw::Float64, gw::Array{Float64,1},
                        c::Float64, α_0::Float64, η::Float64, maxiter::Int32)
+
     @inbounds gws = (gw'*s)[1]
     for i = 1:maxiter
+
         if Obj.f(obj, w + α_0*s) <= fw + c*α_0*gws # Armijo satisfied?
             return α_0, i-1
         else
             α_0 = η*α_0
         end
+
     end
     return α_0, maxiter
+
 end

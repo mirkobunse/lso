@@ -28,6 +28,7 @@ end
 @fastmath function _sbt(obj::Objective, w::Array{Float64,1}, s::Array{Float64,1},
                         b::Array{Int32,1}, fw::Float64, gw::Array{Float64,1},
                         c::Float64, α_0::Float64, η::Float64, maxiter::Int32)
+
     @inbounds gws = (gw'*s)[1]
     for i = 1:maxiter
 
@@ -48,4 +49,5 @@ end
 
     end
     return α_0, maxiter
+    
 end

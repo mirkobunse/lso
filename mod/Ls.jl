@@ -43,6 +43,8 @@ end
 function ls(linesearch::LineSearch, w::Array{Float64,1}, s::Array{Float64,1},
             b::Array{Int32,1}=Int32[],
             fw::Float64=NaN, gw::Array{Float64,1}=Float64[])
+
+    # sanitize arguments
     if isnan(fw)
         if length(b) == 0
             fw = Obj.f(linesearch.obj, w)
@@ -57,7 +59,10 @@ function ls(linesearch::LineSearch, w::Array{Float64,1}, s::Array{Float64,1},
             gw = Obj.g(linesearch.obj, w, b)
         end
     end
+
+    # run ls
     return linesearch.strategy(w, s, b, fw, gw)
+    
 end
 
 
