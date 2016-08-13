@@ -76,20 +76,20 @@ function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true; vlines=nothing)
                                                order=[2,1,3])
     end
 
-    args = [Geom.line, Scale.y_log10(minvalue=1e-6, maxvalue=1e6), Scale.x_continuous(labels = (x -> @sprintf "%6ds" x)),
-            # labels = function (x)
-            #     label::ASCIIString = @sprintf "%6ds" x
-            #     iters = inf[ inf[:time] .>= x, :iter ]
-            #     if length(iters) > 0
-            #         label *= @sprintf "\n(%d)" iters[1]
-            #     # else
-            #     #     iters = inf[ inf[:time] .<= x, :iter ]
-            #     #     if length(iters) > 0
-            #     #         label *= @sprintf "\n(%6d:\n%6.3fs)" inf[end, :time] iters[end]
-            #     #     end
-            #     end
-            #     return label
-            # end),
+    args = [Geom.line, Scale.y_log10(minvalue=1e-6, maxvalue=1e6), Scale.x_continuous(# labels = (x -> @sprintf "%6ds" x)),
+            labels = function (x)
+                label::ASCIIString = @sprintf "%6ds" x
+                iters = inf[ inf[:time] .>= x, :iter ]
+                if length(iters) > 0
+                    label *= @sprintf "\n(%d)" iters[1]
+                # else
+                #     iters = inf[ inf[:time] .<= x, :iter ]
+                #     if length(iters) > 0
+                #         label *= @sprintf "\n(%6d:\n%6.3fs)" inf[end, :time] iters[end]
+                #     end
+                end
+                return label
+            end),
             Guide.xticks(orientation=:horizontal), Guide.xlabel("\n\n   Time  \n(Iteration)"), Guide.ylabel(""),
             Guide.colorkey(""), colorscale]
 
