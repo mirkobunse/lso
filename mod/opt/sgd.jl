@@ -11,7 +11,7 @@ import Ls.LineSearch
     initial w and the given Line Search function. Returns info DataFrame.
 """
 @fastmath function sgd(obj::Objective, w::Array{Float64,1}, ls::LineSearch=Ls.sbt(obj); batchsize::Int32=1,
-             ϵ::Float64=1e-6, maxiter::Int32=1000, maxtime::Int32=60)
+             ϵ::Float64=1e-6, maxiter::Int32=typemax(Int32), maxtime::Int32=60)
 
     inf = LsoBase.new_inf()
 

@@ -11,7 +11,7 @@ import Ls.LineSearch
     given Line Search function. Returns info DataFrame.
 """
 @fastmath function gd(obj::Objective, w::Array{Float64,1}, ls::LineSearch=Ls.bt(obj); batchsize::Int32=-1,
-            ϵ::Float64=1e-6, maxiter::Int32=1000, maxtime::Int32=60)
+            ϵ::Float64=1e-6, maxiter::Int32=typemax(Int32), maxtime::Int32=60)
     inf = LsoBase.new_inf()
 
     # print info header
@@ -55,7 +55,7 @@ import Ls.LineSearch
                 s = -gw # -g(w)
                 b = Inf32[]
                 if batchsize > 0
-                    b = Obj.randbatch(obj, batchsize)   # random sgd index batch
+                    b = Obj.randbatch(obj, batchsize)   # random sbt index batch
                 end
                 α, lsiter = Ls.ls(ls, w, s, b, fw, gw)
                 w += α*s

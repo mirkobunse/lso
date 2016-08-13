@@ -19,7 +19,7 @@ import Ls.LineSearch
 """
 @fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::LineSearch=Ls.sbt(obj);
              batchsize::Int32=1, estimation::Int32=10, strategy::Symbol=:last,
-             ϵ::Float64=1e-6, maxiter::Int32=1000, maxtime::Int32=60)
+             ϵ::Float64=1e-6, maxiter::Int32=typemax(Int32), maxtime::Int32=60)
 
     inf = LsoBase.new_inf()
 
@@ -44,19 +44,6 @@ import Ls.LineSearch
             fw = Obj.f(obj, w, b)
             gw = Obj.g(obj, w, b)
 
-            # svrg estimation update
-            if (k-1) % estimation == 0
-                if strategy == :last
-                    w_est  = w       # TODO implement other w choices
-                elseif strategy == :rand
-                    w_est = inf[:w][ end-rand(1:estimation)+1 ]
-                elseif strategy == :avg
-                    w_est = mean(inf[:w][ (end-estimation+1):end ], 2)
-                end
-                gw_est = Obj.g(obj, w_est)
-            end
-            gw_est_b = Obj.g(obj, w_est, b)   # stochastic gradient of w estimate
-
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
 
@@ -78,6 +65,20 @@ import Ls.LineSearch
             elseif opt < ϵ # stopping criterion satisfied?
                 break
             else
+
+                # svrg estimation update
+                if (k-1) % estimation == 0
+                    if strategy == :last
+                        w_est  = w       # TODO implement other w choices
+                    elseif strategy == :rand
+                        w_est = inf[:w][ end-rand(1:estimation)+1 ]
+                    elseif strategy == :avg
+                        w_est = mean(inf[:w][ (end-estimation+1):end ], 2)
+                    end
+                    gw_est = Obj.g(obj, w_est)
+                end
+                gw_est_b = Obj.g(obj, w_est, b)   # stochastic gradient of w estimate
+
                 s = -gw + gw_est_b - gw_est # -g(w) + g(w_est) - μ
                 α, lsiter = Ls.ls(ls, w, s, b, fw, gw)
                 w += α*s

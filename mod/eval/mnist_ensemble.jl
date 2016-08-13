@@ -34,20 +34,20 @@ import Plotting
 
 
 
-function mnist_gd_bt_ensemble(; maxiter=10000, maxtime=60, ϵ=1e-3)
-    _mnist_ensemble(Opt.gd, maxiter=maxiter, maxtime=maxtime, ϵ=ϵ, assumedgrad=false)
+function mnist_gd_bt_ensemble(; maxtime=60, ϵ=1e-3)
+    _mnist_ensemble(Opt.gd, maxtime=maxtime, ϵ=ϵ, assumedgrad=false)
 end
 
-function mnist_sgd_sbt_ensemble(; maxiter=100000, maxtime=60, batchsize=1, ϵ=0.0)
-    _mnist_ensemble(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, ϵ=ϵ, assumedgrad=false)
+function mnist_sgd_sbt_ensemble(; maxtime=60, batchsize=1, ϵ=0.0)
+    _mnist_ensemble(Opt.sgd, maxtime=maxtime, batchsize=batchsize, ϵ=ϵ, assumedgrad=false)
 end
 
-function mnist_svrg_sbt_ensemble(; maxiter=10000, maxtime=60, batchsize=1, estimation=100, strategy=:avg, ϵ=1e-30)
-    _mnist_ensemble(Opt.svrg, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, estimation=estimation, ϵ=ϵ, assumedgrad=true)
+function mnist_svrg_sbt_ensemble(; maxtime=60, batchsize=1, estimation=100, strategy=:avg, ϵ=1e-30)
+    _mnist_ensemble(Opt.svrg, maxtime=maxtime, batchsize=batchsize, estimation=estimation, ϵ=ϵ, assumedgrad=true)
 end
 
 function _mnist_ensemble(opt::Function;
-                batchsize=1, estimation=10, strategy=:last, maxiter=10000, maxtime=30, ϵ=1e-3, assumedgrad=true,
+                batchsize=1, estimation=10, strategy=:last, maxtime=30, ϵ=1e-3, assumedgrad=true,
                 frac1=.5)
 
     srand(1337)
@@ -77,7 +77,7 @@ function _mnist_ensemble(opt::Function;
     # optimize
     inf1, w1, acc_train1, acc_test1, iterrate1 = _mnist_ensemble_opt(
             opt, X_train1, y_train1, X_test, y_test,
-            ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
+            ϵ=ϵ, maxtime=maxtime,
             batchsize=batchsize, estimation=estimation, strategy=strategy
     )
 
@@ -98,7 +98,7 @@ function _mnist_ensemble(opt::Function;
     # optimize
     inf2, w2, acc_train2, acc_test2, iterrate2 = _mnist_ensemble_opt(
             opt, X_train2, y_train2, X_test, y_test,
-            ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
+            ϵ=ϵ, maxtime=maxtime,
             batchsize=batchsize, estimation=estimation, strategy=strategy
     )
 
@@ -116,7 +116,7 @@ function _mnist_ensemble(opt::Function;
     # optimize
     inf3, w3, acc_train3, acc_test3, iterrate3 = _mnist_ensemble_opt(
             opt, X_train3, y_train3, X_test, y_test,
-            ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
+            ϵ=ϵ, maxtime=maxtime,
             batchsize=batchsize, estimation=estimation, strategy=strategy
     )
 
@@ -189,7 +189,7 @@ end
 
 
 function _mnist_ensemble_opt(opt::Function, X_train, y_train, X_test, y_test;
-                             batchsize=1, estimation=10, strategy=:last, maxiter=10000, maxtime=30, ϵ=1e-3)
+                             batchsize=1, estimation=10, strategy=:last, maxtime=30, ϵ=1e-3)
     
     println("\nNow considering $(size(X_train)[1]) training examples...")
     
@@ -198,15 +198,11 @@ function _mnist_ensemble_opt(opt::Function, X_train, y_train, X_test, y_test;
     obj = Obj.logreg(X_train, y_train)
     inf = LsoBase.new_inf()
     try
-        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
+        @time inf = opt(obj, w0, ϵ=ϵ, maxtime=maxtime,
                         batchsize=batchsize, estimation=estimation, strategy=strategy)
     catch e
-        try
-            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, maxtime=maxtime,
-                            batchsize=batchsize)
-        catch e
-            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, maxtime=maxtime)
-        end
+        @time inf = opt(obj, w0, ϵ=ϵ, maxtime=maxtime,
+                        batchsize=batchsize)
     end
     w = inf[end, :w]
     iterrate = inf[end, :iter] / inf[end, :time]
