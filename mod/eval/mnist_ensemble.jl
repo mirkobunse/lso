@@ -4,6 +4,7 @@ using Colors
 
 import Opt
 import Obj
+import Obj.Objective
 import Plotting
 
 # """
@@ -72,33 +73,13 @@ function _mnist_ensemble(opt::Function;
     train1 = randperm(length(y_train))[1:convert(Int32, floor(frac1*length(y_train)))]
     X_train1 = X_train[train1,:]
     y_train1 = y_train[train1]
-    println("\n1st iteration considers $(size(X_train1)[1]) training examples.")
 
     # optimize
-    w0 = zeros(784) # rand(784)
-    inf1 = LsoBase.new_inf()
-    obj1 = Obj.logreg(X_train1, y_train1)
-    try
-        @time inf1 = opt(obj1, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
-                        batchsize=batchsize, estimation=estimation, strategy=strategy)
-    catch e
-        try
-            @time inf1 = opt(obj1, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
-                            batchsize=batchsize)
-        catch e
-            @time inf1 = opt(obj1, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime)
-        end
-    end
-    w1 = inf1[end, :w]
-    iterrate1 = inf1[end, :iter] / inf1[end, :time]
-
-    # acc
-    acc_train1 = LsoBase.acc(y_train1, Obj.logreg_predict(w1, X_train1))
-    acc_test1  = LsoBase.acc(y_test, Obj.logreg_predict(w1, X_test))
-    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train1)
-    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test1)
-    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate1)
-
+    inf1, w1, acc_train1, acc_test1, iterrate1 = _mnist_ensemble_opt(
+            opt, X_train1, y_train1, X_test, y_test,
+            ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+            batchsize=batchsize, estimation=estimation, strategy=strategy
+    )
 
 
     ################
@@ -113,32 +94,13 @@ function _mnist_ensemble(opt::Function;
     train2indices = vcat(correct1[1:train2size], false1[1:train2size])
     X_train2 = getindex(X_train, train2indices, :)
     y_train2 = getindex(y_train, train2indices)
-    println("\n2nd iteration will consider $(size(X_train2)[1]) training examples.")
 
     # optimize
-    inf2 = LsoBase.new_inf()
-    obj2 = Obj.logreg(X_train2, y_train2)
-    try
-        @time inf2 = opt(obj2, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
-                        batchsize=batchsize, estimation=estimation, strategy=strategy)
-    catch e
-        try
-            @time inf2 = opt(obj2, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
-                            batchsize=batchsize)
-        catch e
-            @time inf2 = opt(obj2, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime)
-        end
-    end
-    w2 = inf2[end, :w]
-    iterrate2 = inf2[end, :iter] / inf2[end, :time]
-
-    # acc
-    acc_train2 = LsoBase.acc(y_train2, Obj.logreg_predict(w2, X_train2))
-    acc_test2  = LsoBase.acc(y_test, Obj.logreg_predict(w2, X_test))
-    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train2)
-    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test2)
-    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate2)
-
+    inf2, w2, acc_train2, acc_test2, iterrate2 = _mnist_ensemble_opt(
+            opt, X_train2, y_train2, X_test, y_test,
+            ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+            batchsize=batchsize, estimation=estimation, strategy=strategy
+    )
 
 
     ################
@@ -150,32 +112,13 @@ function _mnist_ensemble(opt::Function;
     different = (y_pred1 .!= y_pred2)
     X_train3 = X_train[different, :]
     y_train3 = y_train[different]
-    println("\n3rd iteration will consider $(size(X_train3)[1]) training examples.")
 
     # optimize
-    inf3 = LsoBase.new_inf()
-    obj3 = Obj.logreg(X_train3, y_train3)
-    try
-        @time inf3 = opt(obj3, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
-                        batchsize=batchsize, estimation=estimation, strategy=strategy)
-    catch e
-        try
-            @time inf3 = opt(obj3, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
-                            batchsize=batchsize)
-        catch e
-            @time inf3 = opt(obj3, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime)
-        end
-    end
-    w3 = inf3[end, :w]
-    iterrate3 = inf3[end, :iter] / inf3[end, :time]
-
-    # acc
-    acc_train3 = LsoBase.acc(y_train3, Obj.logreg_predict(w3, X_train3))
-    acc_test3  = LsoBase.acc(y_test, Obj.logreg_predict(w3, X_test))
-    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train3)
-    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test3)
-    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate3)
-
+    inf3, w3, acc_train3, acc_test3, iterrate3 = _mnist_ensemble_opt(
+            opt, X_train3, y_train3, X_test, y_test,
+            ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+            batchsize=batchsize, estimation=estimation, strategy=strategy
+    )
 
 
     ################
@@ -198,21 +141,20 @@ function _mnist_ensemble(opt::Function;
     acc_train = LsoBase.acc(y_train, y_trainpred)
     acc_test  = LsoBase.acc(y_test, y_testpred)
     timesum   = sum([inf1[end, :time], inf2[end, :time], inf3[end, :time]])
-    numexamples = size(unique(vcat(X_train1, X_train2, X_train3), 1))[1]
-    meaniterrate = mean([iterrate1, iterrate2, iterrate3])
-    println(@sprintf "\n%30s: %8.4f" "Overall Training set acc" acc_train)
-    println(@sprintf   "%30s: %8.4f" "Overall Test set acc"     acc_test)
-    println(@sprintf   "%30s: %8d"   "Overall # examples"       numexamples)
+    numex     = size(unique(vcat(X_train1, X_train2, X_train3), 1))[1]
+    iterrate  = mean([iterrate1, iterrate2, iterrate3])
 
     # conclusion
     headline = @sprintf "\n\n%16s | %10s | %10s | %10s | %10s | %10s" "Decision" "Train Acc" "Test Acc" "Time (s)" "Train Size" "Iter / sec"
     println(headline, "\n", repeat("-", length(headline)))
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "1st Classifier" acc_train1 acc_test1 inf1[end, :time] size(X_train1)[1] iterrate1)
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "2nd Classifier" acc_train2 acc_test2 inf2[end, :time] size(X_train2)[1] iterrate2)
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "3rd Classifier" acc_train3 acc_test3 inf3[end, :time] size(X_train3)[1] iterrate3)
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" "Majority Vote"  acc_train  acc_test  timesum          numexamples       meaniterrate)
-    println("")
-
+    resline = (c::ASCIIString, tr::Float64, te::Float64, ti::Float64, ex::Int32, it::Float64) ->
+        println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" c tr te ti ex it)
+    resline("1st Classifier", acc_train1, acc_test1, inf1[end, :time], size(X_train1)[1], iterrate1)
+    resline("2nd Classifier", acc_train2, acc_test2, inf2[end, :time], size(X_train2)[1], iterrate2)
+    resline("3rd Classifier", acc_train3, acc_test3, inf3[end, :time], size(X_train3)[1], iterrate3)
+    println(repeat("-", length(headline)))
+    resline("Majority Vote",  acc_train,  acc_test,  timesum,          numex,             iterrate)
+    println(repeat("-", length(headline)), "\n")
 
 
     ################
@@ -240,5 +182,42 @@ function _mnist_ensemble(opt::Function;
 
     return nothing
 
+
+end
+
+
+
+
+function _mnist_ensemble_opt(opt::Function, X_train, y_train, X_test, y_test;
+                             batchsize=1, estimation=10, strategy=:last, maxiter=10000, storeiter=5, maxtime=30, ϵ=1e-3)
+    
+    println("\nNow considering $(size(X_train)[1]) training examples...")
+    
+    # optimize
+    w0 = zeros(784) # rand(784)
+    obj = Obj.logreg(X_train, y_train)
+    inf = LsoBase.new_inf()
+    try
+        @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+                        batchsize=batchsize, estimation=estimation, strategy=strategy)
+    catch e
+        try
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime,
+                            batchsize=batchsize)
+        catch e
+            @time inf = opt(obj, w0, ϵ=ϵ, maxiter=maxiter, storeiter=storeiter, maxtime=maxtime)
+        end
+    end
+    w = inf[end, :w]
+    iterrate = inf[end, :iter] / inf[end, :time]
+
+    # acc
+    acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
+    acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
+    println("\n  Training set acc: $acc_train")
+    println(  "      Test set acc: $acc_test")
+    println(  "  Iterations / sec: $iterrate")
+
+    return inf, w, acc_train, acc_test, iterrate
 
 end
