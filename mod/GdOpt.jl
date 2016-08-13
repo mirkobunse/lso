@@ -22,12 +22,14 @@ end
 
 
 """
-    GdOptimizer(init, update)
+    GdOptimizer(name, init, update)
 
-      init: Initial state.
+      name: The name of the optimization method
+      init: The optimizers initial state.
     update: (obj, k, w, b, inf, state) -> (f(w), ∇ f(w), s, state)
 """
 type GdOptimizer
+      name::ASCIIString
       init::State
     update::Function
 end

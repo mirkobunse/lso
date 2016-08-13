@@ -48,7 +48,8 @@ function mnist_svrg_sbt(; ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strat
     _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1; assumedgrad=false)
+function _mnist(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
+                assumedgrad=false)
 
     srand(1337)
 
@@ -60,7 +61,6 @@ function _mnist(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Floa
     println("Data consists of $(size(X_train)[1]) training and $(size(X_test)[1]) test examples.")
 
     # tst
-    inf = LsoBase.new_inf()
     obj = Obj.logreg(X_train, y_train)
     @time inf = GdOpt.opt(optimizer, ls(obj), obj, zeros(784),
                           ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
@@ -80,8 +80,9 @@ function _mnist(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Floa
         plot = Plotting.plot_inf(inf, obj, assumedgrad)
         Plotting.display_plot(plot)
 
-        optname = methods(opt).name
-        outfile = "./mnist_$optname$batchsize.pdf"
+        optname = optimizer.name
+        lsname  = methods(ls).name
+        outfile = "./mnist_$optname$(batchsize)_$lsname.pdf"
         print("\nDraw to $outfile? (y/N): ")
         if startswith(readline(STDIN), "y")
             Plotting.draw_plot(plot, outfile)

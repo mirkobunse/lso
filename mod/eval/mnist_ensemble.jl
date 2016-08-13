@@ -141,8 +141,9 @@ function _mnist_ensemble(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxt
         plot = Plotting.plot_inf(inf, Obj.logreg(X_train, y_train), assumedgrad, vlines=vlines)
         Plotting.display_plot(plot)
 
-        optname = methods(opt).name
-        outfile = "./mnist_$optname$(batchsize)_ensemble.pdf"
+        optname = optimizer.name
+        lsname  = methods(ls).name
+        outfile = "./mnist_$optname$(batchsize)_$(lsname)_ensemble.pdf"
         print("\nDraw to $outfile? (y/N): ")
         if startswith(readline(STDIN), "y")
             Plotting.draw_plot(plot, outfile)

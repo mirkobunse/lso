@@ -3,6 +3,9 @@ import Obj.Objective
 
 sgd() = GdOptimizer(
 
+    # name
+    "sgd",
+
     # initial state
     EmptyState(),
 
