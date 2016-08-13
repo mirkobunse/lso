@@ -1,4 +1,4 @@
-MODULE_NAMES = ["LsoBase", "Obj", "Opt", "Plotting", "Tst", "Eval"]
+MODULE_NAMES = ["LsoBase", "Obj", "Ls", "Opt", "Plotting", "Tst", "Eval"]
 
 
 # import modules

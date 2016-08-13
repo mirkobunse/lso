@@ -1,8 +1,8 @@
-import Opt
 import Obj
+import Ls
 
 function bt()
-    println("\nTesting Opt.bt...")
+    println("\nTesting Ls.bt...")
     maxiter = 100
 
     # init intractable
@@ -10,10 +10,11 @@ function bt()
         w -> w[1]^2,
         w -> [2w[1], 0]
     )
+    bt = Ls.bt(obj, maxiter=maxiter)
     w = [0.0, 0.0]
     s = [1.0, 0.0]
     # assert
-    α, iter1 = Opt.bt(obj, w, s, maxiter=maxiter)
+    α, iter1 = Ls.ls(bt, w, s)
     success1 = (iter1 == maxiter)
 
     # init tractable
@@ -21,10 +22,11 @@ function bt()
         w -> -w[1]^2,
         w -> [-2w[1], 0]
     )
+    bt = Ls.bt(obj, maxiter=maxiter)
     w = [0.0, 0.0]
     s = [1.0, 0.0]
     # assert
-    α, iter2 = Opt.bt(obj, w, s, maxiter=maxiter)
+    α, iter2 = Ls.ls(bt, w, s)
     success2 = (iter2 < maxiter)
 
     # print results

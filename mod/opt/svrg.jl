@@ -1,4 +1,8 @@
+import Obj
 import Obj.Objective
+import Ls
+import Ls.LineSearch
+
 
 """
     svrg(obj, w [, ls; batchsize, estimation, strategy, ϵ, maxiter, storeiter, maxtime])
@@ -13,7 +17,7 @@ import Obj.Objective
     - :rand     Random snapshot of last iterations
     - :avg      Average of last iterations
 """
-@fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::Function=sbt;
+@fastmath function svrg(obj::Objective, w::Array{Float64,1}, ls::LineSearch=Ls.sbt(obj);
              batchsize::Int32=1, estimation::Int32=10, strategy::Symbol=:last,
              ϵ::Float64=1e-6, maxiter::Int32=1000, storeiter::Int32=100, maxtime::Int32=60)
 
@@ -77,7 +81,7 @@ import Obj.Objective
                 break
             else
                 s = -gw + gw_est_b - gw_est # -g(w) + g(w_est) - μ
-                α, lsiter = ls(obj, w, s, b, fw, gw)
+                α, lsiter = Ls.ls(ls, w, s, b, fw, gw)
                 w += α*s
             end
 

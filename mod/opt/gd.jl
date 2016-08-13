@@ -1,5 +1,8 @@
 import Obj
 import Obj.Objective
+import Ls
+import Ls.LineSearch
+
 
 """
     gd(obj, w [, ls; ϵ, maxiter, storeiter, maxtime])
@@ -7,7 +10,7 @@ import Obj.Objective
     Performs Steepest Descent on objective function with initial w and the
     given Line Search function. Returns info DataFrame.
 """
-@fastmath function gd(obj::Objective, w::Array{Float64,1}, ls::Function=bt;
+@fastmath function gd(obj::Objective, w::Array{Float64,1}, ls::LineSearch=Ls.bt(obj); batchsize::Int32=-1,
             ϵ::Float64=1e-6, maxiter::Int32=1000, storeiter::Int32=5, maxtime::Int32=60)
     inf = LsoBase.new_inf()
 
@@ -52,7 +55,11 @@ import Obj.Objective
                 break
             else
                 s = -gw # -g(w)
-                α, lsiter = ls(obj, w, s, fw, gw)
+                b = Inf32[]
+                if batchsize > 0
+                    b = Obj.randbatch(obj, batchsize)   # random sgd index batch
+                end
+                α, lsiter = Ls.ls(ls, w, s, b, fw, gw)
                 w += α*s
             end
 
