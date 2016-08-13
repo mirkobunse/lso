@@ -30,15 +30,15 @@ import Obj.Objective
     minopt = Inf
     maxf   = -Inf
     w_est = nothing  # w estimate (will be set on first iteration)
-    g_est = nothing  # μ (= full gradient of w estimate)
+    gw_est = nothing  # μ (= full gradient of w estimate)
     try 
 
         for k = 1:maxiter
 
             # stochastic batch setup
-            i = obj.rng(batchsize)   # random sgd index batch
-            fw = obj.sf(w, i)
-            gw = obj.sg(w, i)
+            b = Obj.randbatch(obj, batchsize)   # random sgd index batch
+            fw = Obj.f(obj, w, b)
+            gw = Obj.g(obj, w, b)
 
             # svrg estimation update
             if (k-1) % estimation == 0
@@ -49,9 +49,9 @@ import Obj.Objective
                 elseif strategy == :avg
                     w_est = mean(inf[:w][ (end-estimation+1):end ], 2)
                 end
-                g_est = obj.g(w_est)
+                gw_est = Obj.g(obj, w_est)
             end
-            sg_est = obj.sg(w_est, i)   # stochastic gradient of w estimate
+            gw_est_b = Obj.g(obj, w_est, b)   # stochastic gradient of w estimate
 
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
@@ -76,8 +76,8 @@ import Obj.Objective
             if opt < ϵ # stopping criterion satisfied?
                 break
             else
-                s = -gw + sg_est - g_est # -g(w) + g(w_est) - μ
-                α, lsiter = ls(obj, w, s, i, fw, gw)
+                s = -gw + gw_est_b - gw_est # -g(w) + g(w_est) - μ
+                α, lsiter = ls(obj, w, s, b, fw, gw)
                 w += α*s
             end
 

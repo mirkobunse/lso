@@ -37,7 +37,7 @@ function mnist_gd_bt(; maxiter=10000, maxtime=60, ϵ=1e-3)
     _mnist(Opt.gd, maxiter=maxiter, maxtime=maxtime, ϵ=ϵ, assumedgrad=false)
 end
 
-function mnist_sgd_sbt(; maxiter=100000, maxtime=60, batchsize=1, ϵ=0.0)
+function mnist_sgd_sbt(; maxiter=100000, maxtime=60, batchsize=10, ϵ=0.0)
     _mnist(Opt.sgd, maxiter=maxiter, maxtime=maxtime, batchsize=batchsize, storeiter=500, ϵ=ϵ, assumedgrad=false)
 end
 

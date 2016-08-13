@@ -27,9 +27,9 @@ import Obj.Objective
         for k = 1:maxiter
 
             # stochastic batch setup
-            i = obj.rng(batchsize)   # random sgd index batch
-            fw = obj.sf(w, i)
-            gw = obj.sg(w, i)
+            b = Obj.randbatch(obj, batchsize)   # random sgd index batch
+            fw = Obj.f(obj, w, b)
+            gw = Obj.g(obj, w, b)
 
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)
@@ -55,7 +55,7 @@ import Obj.Objective
                 break
             else
                 s = -gw # -g(w)
-                α, lsiter = ls(obj, w, s, i, fw, gw)
+                α, lsiter = ls(obj, w, s, b, fw, gw)
                 w += α*s
             end
 

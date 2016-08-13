@@ -5,42 +5,85 @@ import LsoBase
 
 
 """
-    Objective(f, g [, sg, sgi, h])
+    Objective(f, g [, h; f_b, g_b])
 
     Creates an objective function object with:
       f:     w  ->   f(w)
       g:     w  -> ∇ f(w)
       h:     w  -> ∇²f(w)
-     sf: (w, i) ->   f(w) (stochastic with index i)
-     sg: (w, i) -> ∇ f(w) (stochastic with index i)
-    rng:     () ->     i  (random index generator)
+    f_b: (w, b) ->   f(w) (stochastic with indices b)
+    g_b: (w, b) -> ∇ f(w) (stochastic with indices b)
+    dim: Number of evaluations needed in order to compute
+         full function value / gradient, e.g., the number
+         of examples
 
-    If sf is not provided, f is used for sf.
-    If sg is not provided, g is used for sg.
+    If f_b is not provided, f is used for f_b.
+    If g_b is not provided, g is used for g_b.
     If h is not provided, an identity matrix is used.
 """
 type Objective
       f::Function
       g::Function
       h::Function
-     sf::Function
-     sg::Function
-    rng::Function
-    function Objective(f::Function, g::Function;
-                       h::Function = (w -> eye(length(w))),
-                       sf::Function = (w, i) -> f(w),
-                       sg::Function = (w, i) -> g(w),
-                       rng::Function = () -> -1)
-        new(f, g, h, sf, sg, rng)
+    f_b::Function
+    g_b::Function
+    dim::Int32
+    function Objective(f::Function, g::Function,
+                       h::Function = (w -> eye(length(w)));
+                       f_b::Function = (w, b) -> f(w),
+                       g_b::Function = (w, b) -> g(w),
+                       dim::Int32 = -1)
+        new(f, g, h, f_b, g_b, dim)
     end
 end
 
 
 """
-    Returns a random index generator function for stochastic gradient.
-"""
-_rng_sgd(y::Array{Float64,1}) = batchsize::Int32 -> randperm(length(y))[1:batchsize]
+    f(obj, w [, b])
 
+    Returns the function value of the objective function obj at point w.
+    Optionally, use the index batch b to evaluate the function against.
+
+    This helper function should ease the access to objects of type Obj.Objective.
+"""
+function f(obj::Objective, w::Array{Float64,1}, b::Array{Int32,1}=Int32[])
+  if length(b) == 0
+    return obj.f(w)
+  else
+    return obj.f_b(w, b)
+  end
+end
+
+
+"""
+    g(obj, w [, b])
+
+    Returns the gradient of the objective function obj at point w.
+    Optionally, use the index batch b to evaluate the function against.
+
+    This helper function should ease the access to objects of type Obj.Objective.
+"""
+function g(obj::Objective, w::Array{Float64,1}, b::Array{Int32,1}=Int32[])
+  if length(b) == 0
+    return obj.g(w)
+  else
+    return obj.g_b(w, b)
+  end
+end
+
+
+"""
+    randbatch(obj, batchsize)
+
+    Returns a random index batch of the given size for the objective function.
+"""
+function randbatch(obj::Objective, batchsize::Int32=1)
+  if batchsize == 1
+    return [rand(1:obj.dim)]
+  else
+    return randperm(obj.dim)[1:batchsize]
+  end
+end
 
 
 # include ./obj/*

@@ -1,3 +1,4 @@
+import Obj
 import Obj.Objective
 
 """
@@ -24,8 +25,8 @@ import Obj.Objective
 
         for k = 1:maxiter
 
-            fw = obj.f(w)
-            gw = obj.g(w)
+            fw = Obj.f(obj, w)
+            gw = Obj.g(obj, w)
 
             # obtain opt, push info to array
             opt = vecnorm(gw, Inf)

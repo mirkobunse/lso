@@ -2,7 +2,7 @@ import Opt
 import Obj
 
 function bt()
-    println("Testing Opt.bt...")
+    println("\nTesting Opt.bt...")
     maxiter = 100
 
     # init intractable

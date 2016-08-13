@@ -16,9 +16,9 @@ LsoBase.includedir(dirname(@__FILE__)*"/tst")
     Run all tests.
 """
 function all()
-    for exported in names(Tst, true)
-        if (exported != :Tst && exported != :__META__ && exported != :eval && exported != :all)
-            eval( :(($exported)()) )  # call exported as function
+    for exp in names(Tst, true) # iterate over exported members
+        if (exp != :Tst && exp != :__META__ && exp != :eval && exp != :all && !startswith(string(exp), "_"))
+            eval( :(($exp)()) )  # call exp as function
         end
     end
 end
