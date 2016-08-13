@@ -11,12 +11,12 @@
 # Pkg.add("MNIST")
 import MNIST
 
-function preparemnist(Xy, p_X, p_y, maxclasssize)
+function preparemnist(Xy, func1, func2, p_X, p_y, maxclasssize)
     X, y = Xy
 
     # split into classes
-    X_a = X[:,(y.==7.0)]
-    X_b = X[:,(y.!=7.0)]
+    X_a = X[:,func1(y)]    # X[:,(y.==7.0)]
+    X_b = X[:,func2(y)]    # X[:,(y.!=7.0)]
 
     # cleanup
     X = nothing
@@ -52,12 +52,35 @@ function preparemnist(Xy, p_X, p_y, maxclasssize)
 end
 
 
-println("\nPreparing MNIST test data...")
-preparemnist(MNIST.traindata(), "./X_test.dlm", "./y_test.dlm", 2500)
+################
+# 7-vs-all split
+################
+mkdir("./seven_vs_all")
+println("\nPreparing 7-vs-all test data...")
+preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .!= 7.0),
+             "./seven_vs_all/X_test.dlm", "./seven_vs_all/y_test.dlm", 2500)
 gc()
 
-println("\nPreparing MNIST training data...")
-preparemnist(MNIST.testdata(),"./X_train.dlm", "./y_train.dlm", 1000)
+println("\nPreparing 7-vs-all training data...")
+preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .!= 7.0),
+             "./seven_vs_all/X_train.dlm", "./seven_vs_all/y_train.dlm", 1000)
+
+
+################
+# 7-vs-6 split
+################
+mkdir("./seven_vs_six")
+println("\nPreparing 7-vs-six test data...")
+preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .== 6.0),
+             "./seven_vs_six/X_test.dlm", "./seven_vs_six/y_test.dlm", 2500)
+gc()
+
+println("\nPreparing 7-vs-all training data...")
+preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .== 6.0),
+             "./seven_vs_six/X_train.dlm", "./seven_vs_six/y_train.dlm", 1000)
+
 
 println("\nDone.\n")
+
+
 return nothing
