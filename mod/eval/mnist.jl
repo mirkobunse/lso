@@ -36,22 +36,22 @@ import Plotting
 
 
 
-function mnist_gd_bt(; ϵ=1e-3, maxtime=60.0)
-    _mnist(GdOpt.gd(), Ls.bt, ϵ, maxtime)
+function mnist_gd_bt(; seed=1337, ϵ=1e-3, maxtime=60.0)
+    _mnist(GdOpt.gd(), Ls.bt, seed, ϵ, maxtime)
 end
 
-function mnist_sgd_sbt(; ϵ=0.0, maxtime=60.0, batchsize=10)
-    _mnist(GdOpt.sgd(), Ls.sbt, ϵ, maxtime, batchsize)
+function mnist_sgd_sbt(; seed=1337, ϵ=0.0, maxtime=60.0, batchsize=10)
+    _mnist(GdOpt.sgd(), Ls.sbt, seed, ϵ, maxtime, batchsize)
 end
 
-function mnist_svrg_sbt(; ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
-    _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt, ϵ, maxtime, batchsize, assumedgrad=true)
+function mnist_svrg_sbt(; seed=1337, ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
+    _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt, seed, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
+function _mnist(optimizer::GdOptimizer, ls::Function, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
                 assumedgrad=false)
 
-    srand(1337)
+    srand(seed)
 
     println("Reading data...")
     X_train = readdlm("data/seven_vs_all/X_train.dlm")

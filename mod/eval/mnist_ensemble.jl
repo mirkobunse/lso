@@ -8,22 +8,22 @@ import Obj
 import Plotting
 
 
-function mnist_gd_bt_ensemble(; ϵ=1e-3, maxtime=60.0)
-    _mnist_ensemble(GdOpt.gd(), Ls.bt, ϵ, maxtime)
+function mnist_gd_bt_ensemble(; seed=1337, ϵ=1e-3, maxtime=60.0)
+    _mnist_ensemble(GdOpt.gd(), Ls.bt, seed, ϵ, maxtime)
 end
 
-function mnist_sgd_sbt_ensemble(; ϵ=0.0, maxtime=60.0, batchsize=10)
-    _mnist_ensemble(GdOpt.sgd(), Ls.sbt, ϵ, maxtime, batchsize)
+function mnist_sgd_sbt_ensemble(; seed=1337, ϵ=0.0, maxtime=60.0, batchsize=10)
+    _mnist_ensemble(GdOpt.sgd(), Ls.sbt, seed, ϵ, maxtime, batchsize)
 end
 
-function mnist_svrg_sbt_ensemble(; ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
-    _mnist_ensemble(GdOpt.svrg(estiter, strategy), Ls.sbt, ϵ, maxtime, batchsize, assumedgrad=true)
+function mnist_svrg_sbt_ensemble(; seed=1337, ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
+    _mnist_ensemble(GdOpt.svrg(estiter, strategy), Ls.sbt, seed, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist_ensemble(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
+function _mnist_ensemble(optimizer::GdOptimizer, ls::Function, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
                 assumedgrad=false, frac1=.5)
 
-    srand(1337)
+    srand(seed)
 
     ################
     # DATA
