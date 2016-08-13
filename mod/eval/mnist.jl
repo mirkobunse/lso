@@ -51,10 +51,10 @@ function _mnist(opt::Function;
     srand(1337)
 
     println("Reading data...")
-    X_train = readdlm("data/X_train.dlm")
-    y_train = vec(readdlm("data/y_train.dlm"))
-    X_test  = readdlm("data/X_test.dlm")
-    y_test  = vec(readdlm("data/y_test.dlm"))
+    X_train = readdlm("data/seven_vs_all/X_train.dlm")
+    y_train = vec(readdlm("data/seven_vs_all/y_train.dlm"))
+    X_test  = readdlm("data/seven_vs_all/X_test.dlm")
+    y_test  = vec(readdlm("data/seven_vs_all/y_test.dlm"))
     println("Data consists of $(size(X_train)[1]) training and $(size(X_test)[1]) test examples.")
 
     # tst
