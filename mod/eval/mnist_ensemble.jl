@@ -1,54 +1,27 @@
 using Colors
-# using Images
-# using ImageView
 
-import Opt
+import Ls
+import Ls.LineSearch
+import GdOpt
+import GdOpt.GdOptimizer
 import Obj
-import Obj.Objective
 import Plotting
 
-# """
-#     mnist_img(row)
-#     
-#     Obtain the row of the MNIST data matrix as image.
-# """
-# function mnist_img(row)
-#     img = Images.grayim(convert( Images.Image{Gray}, reshape(row, (28,28)) ))
-#     img["spatialorder"] = ["y", "x"]
-#     return img
-# end
-# 
-# """
-#     mnist_view(img)
-#     
-#     View an image obtained by mnist_img.
-# """
-# mnist_view(img) = ImageView.view(img) # xy=["y","x"])
-# 
-# """
-#     mnist_saveview(filename, imgview)
-#     
-#     Save the image obtained by mnist_view(example)
-# """
-# mnist_saveimg(filename, img) = Images.save(filename, img)
 
-
-
-function mnist_gd_bt_ensemble(; maxtime=60, ϵ=1e-3)
-    _mnist_ensemble(Opt.gd, maxtime=maxtime, ϵ=ϵ, assumedgrad=false)
+function mnist_gd_bt_ensemble(; ϵ=1e-3, maxtime=60.0)
+    _mnist_ensemble(GdOpt.gd(), Ls.bt, ϵ, maxtime)
 end
 
-function mnist_sgd_sbt_ensemble(; maxtime=60, batchsize=1, ϵ=0.0)
-    _mnist_ensemble(Opt.sgd, maxtime=maxtime, batchsize=batchsize, ϵ=ϵ, assumedgrad=false)
+function mnist_sgd_sbt_ensemble(; ϵ=0.0, maxtime=60.0, batchsize=10)
+    _mnist_ensemble(GdOpt.sgd(), Ls.sbt, ϵ, maxtime, batchsize)
 end
 
-function mnist_svrg_sbt_ensemble(; maxtime=60, batchsize=1, estimation=100, strategy=:avg, ϵ=1e-30)
-    _mnist_ensemble(Opt.svrg, maxtime=maxtime, batchsize=batchsize, estimation=estimation, ϵ=ϵ, assumedgrad=true)
+function mnist_svrg_sbt_ensemble(; ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
+    _mnist_ensemble(GdOpt.svrg(estiter, strategy), Ls.sbt, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist_ensemble(opt::Function;
-                batchsize=1, estimation=10, strategy=:last, maxtime=30, ϵ=1e-3, assumedgrad=true,
-                frac1=.5)
+function _mnist_ensemble(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
+                assumedgrad=false, frac1=.5)
 
     srand(1337)
 
@@ -76,9 +49,8 @@ function _mnist_ensemble(opt::Function;
 
     # optimize
     inf1, w1, acc_train1, acc_test1, iterrate1 = _mnist_ensemble_opt(
-            opt, X_train1, y_train1, X_test, y_test,
-            ϵ=ϵ, maxtime=maxtime,
-            batchsize=batchsize, estimation=estimation, strategy=strategy
+            optimizer, ls, X_train1, y_train1, X_test, y_test,
+            ϵ, maxtime, batchsize
     )
 
 
@@ -97,9 +69,8 @@ function _mnist_ensemble(opt::Function;
 
     # optimize
     inf2, w2, acc_train2, acc_test2, iterrate2 = _mnist_ensemble_opt(
-            opt, X_train2, y_train2, X_test, y_test,
-            ϵ=ϵ, maxtime=maxtime,
-            batchsize=batchsize, estimation=estimation, strategy=strategy
+            optimizer, ls, X_train2, y_train2, X_test, y_test,
+            ϵ, maxtime, batchsize
     )
 
 
@@ -115,9 +86,8 @@ function _mnist_ensemble(opt::Function;
 
     # optimize
     inf3, w3, acc_train3, acc_test3, iterrate3 = _mnist_ensemble_opt(
-            opt, X_train3, y_train3, X_test, y_test,
-            ϵ=ϵ, maxtime=maxtime,
-            batchsize=batchsize, estimation=estimation, strategy=strategy
+            optimizer, ls, X_train3, y_train3, X_test, y_test,
+            ϵ, maxtime, batchsize
     )
 
 
@@ -188,22 +158,15 @@ end
 
 
 
-function _mnist_ensemble_opt(opt::Function, X_train, y_train, X_test, y_test;
-                             batchsize=1, estimation=10, strategy=:last, maxtime=30, ϵ=1e-3)
+function _mnist_ensemble_opt(optimizer::GdOptimizer, ls::Function, X_train, y_train, X_test, y_test,
+                             ϵ::Float64, maxtime::Float64, batchsize::Int32)
     
     println("\nNow considering $(size(X_train)[1]) training examples...")
     
     # optimize
-    w0 = zeros(784) # rand(784)
     obj = Obj.logreg(X_train, y_train)
-    inf = LsoBase.new_inf()
-    try
-        @time inf = opt(obj, w0, ϵ=ϵ, maxtime=maxtime,
-                        batchsize=batchsize, estimation=estimation, strategy=strategy)
-    catch e
-        @time inf = opt(obj, w0, ϵ=ϵ, maxtime=maxtime,
-                        batchsize=batchsize)
-    end
+    @time inf = GdOpt.opt(optimizer, ls(obj), obj, zeros(784),
+                          ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
     w = inf[end, :w]
     iterrate = inf[end, :iter] / inf[end, :time]
 

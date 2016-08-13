@@ -2,7 +2,10 @@ using Colors
 # using Images
 # using ImageView
 
-import Opt
+import Ls
+import Ls.LineSearch
+import GdOpt
+import GdOpt.GdOptimizer
 import Obj
 import Plotting
 
@@ -33,20 +36,19 @@ import Plotting
 
 
 
-function mnist_gd_bt(; maxtime=60, ϵ=1e-3)
-    _mnist(Opt.gd, maxtime=maxtime, ϵ=ϵ, assumedgrad=false)
+function mnist_gd_bt(; ϵ=1e-3, maxtime=60.0)
+    _mnist(GdOpt.gd(), Ls.bt, ϵ, maxtime)
 end
 
-function mnist_sgd_sbt(; maxtime=60, batchsize=10, ϵ=0.0)
-    _mnist(Opt.sgd, maxtime=maxtime, batchsize=batchsize, ϵ=ϵ, assumedgrad=false)
+function mnist_sgd_sbt(; ϵ=0.0, maxtime=60.0, batchsize=10)
+    _mnist(GdOpt.sgd(), Ls.sbt, ϵ, maxtime, batchsize)
 end
 
-function mnist_svrg_sbt(; maxtime=60, batchsize=10, estimation=10, strategy=:avg, ϵ=1e-3)
-    _mnist(Opt.svrg, maxtime=maxtime, batchsize=batchsize, estimation=estimation, ϵ=ϵ, assumedgrad=true)
+function mnist_svrg_sbt(; ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
+    _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist(opt::Function;
-                batchsize=1, estimation=10, strategy=:last, maxtime=30, ϵ=1e-3, assumedgrad=true)
+function _mnist(optimizer::GdOptimizer, ls::Function, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1; assumedgrad=false)
 
     srand(1337)
 
@@ -58,16 +60,10 @@ function _mnist(opt::Function;
     println("Data consists of $(size(X_train)[1]) training and $(size(X_test)[1]) test examples.")
 
     # tst
-    w0 = zeros(784) # rand(784)
     inf = LsoBase.new_inf()
     obj = Obj.logreg(X_train, y_train)
-    try
-        @time inf = opt(obj, w0, ϵ=ϵ, maxtime=maxtime,
-                        batchsize=batchsize, estimation=estimation, strategy=strategy)
-    catch e
-        @time inf = opt(obj, w0, ϵ=ϵ, maxtime=maxtime,
-                        batchsize=batchsize)
-    end
+    @time inf = GdOpt.opt(optimizer, ls(obj), obj, zeros(784),
+                          ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
     w = inf[end, :w]
     iterrate = inf[end, :iter] / inf[end, :time]
 
