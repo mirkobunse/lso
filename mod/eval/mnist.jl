@@ -240,7 +240,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     if storage
         filename = "./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
         LsoBase.store(inf, filename * ".csv")
-        Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad), filename * ".pdf")
+        Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad, maxtime=3*maxtime), filename * ".pdf")
     end
     
     println("")
