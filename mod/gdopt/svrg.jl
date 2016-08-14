@@ -16,7 +16,7 @@ end
     - :rand     Random snapshot of last iterations
     - :avg      Average of last iterations
 """
-svrg(estiter::Int32=10, strategy::Symbol=:last) = GdOptimizer(
+svrg(estiter::Int=10, strategy::Symbol=:last) = GdOptimizer(
 
     # name
     "svrg-"*string(estiter)*"-"*string(strategy),
@@ -25,14 +25,14 @@ svrg(estiter::Int32=10, strategy::Symbol=:last) = GdOptimizer(
     SvrgState(Float64[], Float64[]),    # correct values will be set in first iteration
 
     # update
-    function (obj::Objective, k::Int32, w::Array{Float64,1}, b::Array{Int32,1}, inf, state::State)
+    function (obj::Objective, k::Int, w::Array{Float64,1}, b::Array{Int,1}, inf, state::State)
         return _svrg_update(obj, k, w, b, inf, state, estiter, strategy)
     end
 
 )
 
-@fastmath function _svrg_update(obj::Objective, k::Int32, w::Array{Float64,1}, b::Array{Int32,1}, inf, state::State,
-                                estiter::Int32, strategy::Symbol)
+@fastmath function _svrg_update(obj::Objective, k::Int, w::Array{Float64,1}, b::Array{Int,1}, inf, state::State,
+                                estiter::Int, strategy::Symbol)
 
     gw = Obj.g(obj, w, b)
 

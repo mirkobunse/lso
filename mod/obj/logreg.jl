@@ -6,13 +6,13 @@
 logreg(X::Array{Float64,2}, y::Array{Float64,1}, λ::Float64=0.0) = Objective(
     w::Array{Float64,1} -> _logreg_f(X, y, w, λ),  # f
     w::Array{Float64,1} -> _logreg_g(X, y, w, λ),  # g
-    f_b = (w::Array{Float64,1}, b::Array{Int32,1}) -> _logreg_f(X, y, w, λ, b),
-    g_b = (w::Array{Float64,1}, b::Array{Int32,1}) -> _logreg_g(X, y, w, λ, b),
+    f_b = (w::Array{Float64,1}, b::Array{Int,1}) -> _logreg_f(X, y, w, λ, b),
+    g_b = (w::Array{Float64,1}, b::Array{Int,1}) -> _logreg_g(X, y, w, λ, b),
     dim = length(y)
 )
 
 function _logreg_f(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1},
-                   λ::Float64, b::Array{Int32,1}=Int32[])
+                   λ::Float64, b::Array{Int,1}=Int[])
     reg = 0.0
     if λ > 0.0
         reg = λ * vecnorm(w, 1)
@@ -25,7 +25,7 @@ function _logreg_f(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1}
 end
 
 function _logreg_g(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1},
-                   λ::Float64, b::Array{Int32,1}=Int32[])
+                   λ::Float64, b::Array{Int,1}=Int[])
     reg = 0.0
     if λ > 0.0
         reg = λ * vecnorm(w, 1)

@@ -42,7 +42,7 @@ end
     given Line Search function. Returns info DataFrame.
 """
 @fastmath function opt(optimizer::GdOptimizer, ls::LineSearch, obj::Objective, w_0::Array{Float64,1};
-                         ϵ::Float64=1e-6, maxiter::Int32=typemax(Int32), maxtime::Float64=60.0, batchsize::Int32=-1)
+                         ϵ::Float64=1e-6, maxiter::Int=typemax(Int), maxtime::Float64=60.0, batchsize::Int=-1)
     inf = LsoBase.new_inf()
 
     # print info header
@@ -61,7 +61,7 @@ end
 
         for k = 1:maxiter
 
-            b = Int32[]
+            b = Int[]
             if batchsize > 0
                 b = Obj.randbatch(obj, batchsize)   # random sbt index batch
             end

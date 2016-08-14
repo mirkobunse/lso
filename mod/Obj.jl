@@ -27,12 +27,12 @@ type Objective
       h::Function
     f_b::Function
     g_b::Function
-    dim::Int32
+    dim::Int
     function Objective(f::Function, g::Function,
                        h::Function = (w -> eye(length(w)));
                        f_b::Function = (w, b) -> f(w),
                        g_b::Function = (w, b) -> g(w),
-                       dim::Int32 = -1)
+                       dim::Int = -1)
         new(f, g, h, f_b, g_b, dim)
     end
 end
@@ -46,7 +46,7 @@ end
 
     This helper function should ease the access to objects of type Obj.Objective.
 """
-function f(obj::Objective, w::Array{Float64,1}, b::Array{Int32,1}=Int32[])
+function f(obj::Objective, w::Array{Float64,1}, b::Array{Int,1}=Int[])
   if length(b) == 0
     return obj.f(w)
   else
@@ -63,7 +63,7 @@ end
 
     This helper function should ease the access to objects of type Obj.Objective.
 """
-function g(obj::Objective, w::Array{Float64,1}, b::Array{Int32,1}=Int32[])
+function g(obj::Objective, w::Array{Float64,1}, b::Array{Int,1}=Int[])
   if length(b) == 0
     return obj.g(w)
   else
@@ -77,7 +77,7 @@ end
 
     Returns a random index batch of the given size for the objective function.
 """
-function randbatch(obj::Objective, batchsize::Int32=1)
+function randbatch(obj::Objective, batchsize::Int=1)
   if batchsize == 1
     if obj.dim > 1
       return [rand(1:obj.dim)]

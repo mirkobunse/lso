@@ -6,13 +6,13 @@
 linreg(X::Array{Float64,2}, y::Array{Float64,1}) = Objective(
     w::Array{Float64,1} -> _linreg_f(X, y, w),  # f
     w::Array{Float64,1} -> _linreg_g(X, y, w),  # g
-    f_b = (w::Array{Float64,1}, b::Array{Int32,1}) -> _linreg_f(X, y, w, b),
-    g_b = (w::Array{Float64,1}, b::Array{Int32,1}) -> _linreg_g(X, y, w, b),
+    f_b = (w::Array{Float64,1}, b::Array{Int,1}) -> _linreg_f(X, y, w, b),
+    g_b = (w::Array{Float64,1}, b::Array{Int,1}) -> _linreg_g(X, y, w, b),
     dim = length(y)
 )
 
 function _linreg_f(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1},
-                   b::Array{Int32,1}=Int32[])
+                   b::Array{Int,1}=Int[])
     if length(b) == 0
         return vecnorm(y - X*w)^2 / (2*length(y))
     else
@@ -21,7 +21,7 @@ function _linreg_f(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1}
 end
 
 function _linreg_g(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1},
-                   b::Array{Int32,1}=Int32[])
+                   b::Array{Int,1}=Int[])
     if length(b) == 0
         return vec(X' * (X*w - y)) ./ length(y)
     else
