@@ -31,7 +31,7 @@ mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last) =
     Evaluate optimizer on MNIST data with Logistic Regression.
 """
 function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-               ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false, plotting=true)
+               ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, plotting=true)
 
     println("\nRunning Eval.mnist with seed $seed on $(gdopt.name) with $(ls.name)...")
     srand(seed)
@@ -63,7 +63,7 @@ end
     Evaluate optimizer on MNIST data with historic boosting.
 """
 function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-                     ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5, plotting=true)
+                     ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5, plotting=true)
     
     println("\nRunning Eval.mnist_boost with seed $seed on $(gdopt.name) with $(ls.name)...")
     srand(seed)

@@ -36,7 +36,7 @@ end
     Plot development of optimality and function value, as given by the DataFrame inf.
     Returns Gadfly plot object.
 """
-function plot_inf(inf::DataFrame, assumedgrad=true; vlines=nothing)
+function plot_inf(inf::DataFrame, assumedgrad=true; maxtime=30.0, vlines=nothing)
 
     println("Plotting...")
     df = vcat(
@@ -82,7 +82,7 @@ function plot_inf(inf::DataFrame, assumedgrad=true; vlines=nothing)
                 end
                 return label
             end),
-            Guide.xticks(orientation=:horizontal), Guide.xlabel("\n\n   Time  \n(Iteration)"), Guide.ylabel(""),
+            Guide.xticks(ticks=collect(0:10:30)), Guide.xlabel("\n\n   Time  \n(Iteration)"), Guide.ylabel(""),
             Guide.colorkey(""), colorscale]
 
     if vlines == nothing
