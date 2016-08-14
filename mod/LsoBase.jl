@@ -37,18 +37,19 @@ new_inf() = DataFrame(
     new_acc()
 
     Create new DataFrame to hold classifier info.
-    Will have columns gdopt, ls, data, trainsize, trainacc,
-    testacc, time and iterrate.
+    Will have columns gdopt, ls, classifier data, trainsize,
+    trainacc, testacc, time and iterrate.
 """
 new_acc() = DataFrame(
-                gdopt     = ASCIIString[],
-                ls        = ASCIIString[],
-                data      = ASCIIString[],
-                trainsize = Int32[],
-                trainacc  = Float64[],
-                testacc   = Float64[],
-                time      = Float64[],
-                iterrate  = Float64[]
+                gdopt      = ASCIIString[],
+                ls         = ASCIIString[],
+                data       = ASCIIString[],
+                classifier = ASCIIString[],
+                trainsize  = Int32[],
+                trainacc   = Float64[],
+                testacc    = Float64[],
+                time       = Float64[],
+                iterrate   = Float64[]
             )
 
 
@@ -69,8 +70,9 @@ end
     Will push the given classifier info to DataFrame acc.
 """
 function push_acc!(acc::DataFrame, gdopt::ASCIIString, ls::ASCIIString, data::ASCIIString,
-                   trainsize::Int32, trainacc::Float64, testacc::Float64, time::Float64, iterrate::Float64)
-    push!(acc, (gdopt, ls, data, trainsize, trainacc, testacc, time, iterrate))
+                   classifier::ASCIIString, trainsize::Int32, trainacc::Float64, testacc::Float64,
+                   time::Float64, iterrate::Float64)
+    push!(acc, (gdopt, ls, data, classifier, trainsize, trainacc, testacc, time, iterrate))
 end
 
 

@@ -39,7 +39,7 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
     X_train, y_train, X_test, y_test = _mnist_data(folder)  # read data
 
     # optimize
-    inf, obj, w, acc_train, acc_test, iterrate = _mnist_opt(
+    inf, obj, w, acc_train, acc_test, time, iterrate = _mnist_opt(
             gdopt, ls, X_train, y_train, X_test, y_test,
             ϵ, maxtime, batchsize
     )
@@ -54,7 +54,10 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
         Plotting.draw_plot(plot, outfile)
     end
     
-    return nothing
+    println("")
+    df = LsoBase.new_acc()
+    LsoBase.push_acc!(df, gdopt.name, ls.name, "LogReg", folder, size(X_train)[1], acc_train, acc_test, time, iterrate)
+    return df
 
 end
 
@@ -76,7 +79,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     y_train1 = y_train[train1]
 
     # optimize
-    inf1, w1, acc_train1, acc_test1, iterrate1 = _mnist_ensemble_opt(
+    inf1, obj1, w1, acc_train1, acc_test1, time1, iterrate1 = _mnist_opt(
             gdopt, ls, X_train1, y_train1, X_test, y_test,
             ϵ, maxtime, batchsize
     )
@@ -94,7 +97,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     y_train2   = getindex(y_train, vcat(correct1[1:train2size], false1[1:train2size]))
 
     # optimize
-    inf2, w2, acc_train2, acc_test2, iterrate2 = _mnist_ensemble_opt(
+    inf2, obj2, w2, acc_train2, acc_test2, time2, iterrate2 = _mnist_opt(
             gdopt, ls, X_train2, y_train2, X_test, y_test,
             ϵ, maxtime, batchsize
     )
@@ -109,7 +112,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     y_train3 = y_train[(y_pred1 .!= y_pred2)]
 
     # optimize
-    inf3, w3, acc_train3, acc_test3, iterrate3 = _mnist_ensemble_opt(
+    inf3, obj3, w3, acc_train3, acc_test3, time3, iterrate3 = _mnist_opt(
             gdopt, ls, X_train3, y_train3, X_test, y_test,
             ϵ, maxtime, batchsize
     )
@@ -133,30 +136,30 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     # acc
     acc_train = LsoBase.acc(y_train, y_trainpred)
     acc_test  = LsoBase.acc(y_test, y_testpred)
-    timesum   = sum([inf1[end, :time], inf2[end, :time], inf3[end, :time]])
+    timesum   = sum([time1, time2, time3])
     numex     = size(unique(vcat(X_train1, X_train2, X_train3), 1))[1]
     iterrate  = mean([iterrate1, iterrate2, iterrate3])
 
     # conclusion
-    headline = @sprintf "\n\n%16s | %10s | %10s | %10s | %10s | %10s" "Decision" "Train Acc" "Test Acc" "Time (s)" "Train Size" "Iter / sec"
-    println(headline, "\n", repeat("-", length(headline)))
-    resline = (c::ASCIIString, tr::Float64, te::Float64, ti::Float64, ex::Int32, it::Float64) ->
-    println(@sprintf "%16s | %10.3f | %10.3f | %10.3f | %10d | %10.3f" c tr te ti ex it)
-    resline("1st Classifier", acc_train1, acc_test1, inf1[end, :time], size(X_train1)[1], iterrate1)
-    resline("2nd Classifier", acc_train2, acc_test2, inf2[end, :time], size(X_train2)[1], iterrate2)
-    resline("3rd Classifier", acc_train3, acc_test3, inf3[end, :time], size(X_train3)[1], iterrate3)
-    println(repeat("-", length(headline)))
-    resline("Majority Vote",  acc_train,  acc_test,  timesum,          numex,             iterrate)
-    println(repeat("-", length(headline)), "\n")
+    df = LsoBase.new_acc()
+    LsoBase.push_acc!(df, gdopt.name, ls.name, folder, "LogReg B1",
+                      size(X_train1)[1], acc_train1, acc_test1, time1,   iterrate1)
+    LsoBase.push_acc!(df, gdopt.name, ls.name, folder, "LogReg B2",
+                      size(X_train2)[1], acc_train2, acc_test2, time2,   iterrate2)
+    LsoBase.push_acc!(df, gdopt.name, ls.name, folder, "LogReg B3",
+                      size(X_train3)[1], acc_train3, acc_test3, time3,   iterrate3)
+    LsoBase.push_acc!(df, gdopt.name, ls.name, folder, "Boosting B1-3",
+                      numex,             acc_train,  acc_test,  timesum, iterrate)
+    print_with_color(:bold, "\n", string(df), "\n")
 
     # ask user for plot
     outfile = "./results/$folder/boost_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf"
     print("\nDraw to $outfile? (y/N): ")
     if startswith(readline(STDIN), "y")
         println("Plotting...")
-        inf2[:time] += inf1[end, :time]
+        inf2[:time] += time1
         inf2[:iter] += inf1[end, :iter]
-        inf3[:time] += inf2[end, :time]
+        inf3[:time] += time2
         inf3[:iter] += inf2[end, :iter]
         inf = vcat(inf1, inf2, inf3)
         # vlines = [inf1[end, :time], inf2[end, :time], inf3[end, :time]]
@@ -165,7 +168,8 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
         Plotting.draw_plot(plot, outfile)
     end
     
-    return nothing
+    println("")
+    return df
 
 end
 
@@ -190,6 +194,7 @@ function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test
     @time inf = GdOpt.opt(gdopt, ls, obj, zeros(784),
                           ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
     w = inf[end, :w]
+    time = inf[end, :time]
     iterrate = inf[end, :iter] / inf[end, :time]
 
     # acc
@@ -199,6 +204,6 @@ function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test
     println(  "      Test set acc: $acc_test")
     println(  "  Iterations / sec: $iterrate")
 
-    return inf, obj, w, acc_train, acc_test, iterrate
+    return inf, obj, w, acc_train, acc_test, time, iterrate
 
 end
