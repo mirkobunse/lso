@@ -36,20 +36,25 @@ import Plotting
 
 
 
-function mnist_gd_bt(; seed=1337, ϵ=1e-3, maxtime=60.0)
-    _mnist(GdOpt.gd(), Ls.bt(), seed, ϵ, maxtime)
+""" Quick test function for gradient descent. """
+mnist_gd() = mnist(GdOpt.gd(), Ls.bt())
+
+""" Quick test function for stochastic gradient descent. """
+mnist_sgd(batchsize=1) = mnist(GdOpt.sgd(), Ls.sbt(), ϵ=0.0, batchsize=batchsize)
+
+""" Quick test function for SVRG. """
+function mnist_svrg(; batchsize=10, estiter=10, strategy=:last)
+    mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, assumedgrad=true)
 end
 
-function mnist_sgd_sbt(; seed=1337, ϵ=0.0, maxtime=60.0, batchsize=10)
-    _mnist(GdOpt.sgd(), Ls.sbt(), seed, ϵ, maxtime, batchsize)
-end
 
-function mnist_svrg_sbt(; seed=1337, ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
-    _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), seed, ϵ, maxtime, batchsize, assumedgrad=true)
-end
+"""
+    mnist(gdopt, ls, [, seed; ϵ, maxtime, batchsize, assumedgrad])
 
-function _mnist(optimizer::GdOptimizer, ls::LineSearch, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
-                assumedgrad=false)
+    Evaluate optimizer on MNIST data.
+"""
+function mnist(gdopt::GdOptimizer, ls::LineSearch, seed::Int32=1337;
+               ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false)
 
     srand(seed)
 
@@ -60,9 +65,35 @@ function _mnist(optimizer::GdOptimizer, ls::LineSearch, seed::Int32, ϵ::Float64
     y_test  = vec(readdlm("data/seven_vs_all/y_test.dlm"))
     println("Data consists of $(size(X_train)[1]) training and $(size(X_test)[1]) test examples.")
 
-    # tst
+    # optimize
+    inf, obj, w, acc_train, acc_test, iterrate = _mnist_opt(
+            gdopt, ls, X_train, y_train, X_test, y_test,
+            ϵ, maxtime, batchsize
+    )
+
+    # ask user for plot
+    outfile = "./results/seven_vs_all/$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf"
+    print("\nDraw to $outfile? (y/N): ")
+    if startswith(readline(STDIN), "y")
+        println("Plotting...")
+        plot = Plotting.plot_inf(inf, obj, assumedgrad)
+        println("Drawing to $outfile...")
+        Plotting.draw_plot(plot, outfile)
+    end
+    
+    return nothing
+
+end
+
+
+function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test, y_test,
+                    ϵ::Float64, maxtime::Float64, batchsize::Int32)
+    
+    println("\nNow considering $(size(X_train)[1]) training examples...")
+    
+    # optimize
     obj = Obj.logreg(X_train, y_train)
-    @time inf = GdOpt.opt(optimizer, ls, obj, zeros(784),
+    @time inf = GdOpt.opt(gdopt, ls, obj, zeros(784),
                           ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
     w = inf[end, :w]
     iterrate = inf[end, :iter] / inf[end, :time]
@@ -70,30 +101,10 @@ function _mnist(optimizer::GdOptimizer, ls::LineSearch, seed::Int32, ϵ::Float64
     # acc
     acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
     acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
-    println(@sprintf "\n%20s: %8.4f" "Training set acc" acc_train)
-    println(@sprintf   "%20s: %8.4f" "Test set acc"     acc_test)
-    println(@sprintf   "%20s: %8.4f" "Iterations / sec" iterrate)
+    println("\n  Training set acc: $acc_train")
+    println(  "      Test set acc: $acc_test")
+    println(  "  Iterations / sec: $iterrate")
 
-    # ask user for plot
-    print("\nPlot progress? (y/N): ")
-    if startswith(readline(STDIN), "y")
-        plot = Plotting.plot_inf(inf, obj, assumedgrad)
-        Plotting.display_plot(plot)
-
-        optname = optimizer.name
-        lsname  = ls.name
-        outfile = "./mnist_$optname$(batchsize)_$lsname.pdf"
-        print("\nDraw to $outfile? (y/N): ")
-        if startswith(readline(STDIN), "y")
-            Plotting.draw_plot(plot, outfile)
-        end
-
-        # print("\nShow weight vector? (y/N): ")
-        # if startswith(readline(STDIN), "y")
-        #     mnist_view(mnist_img(w))
-        # end
-    end
-
-    return nothing
+    return inf, obj, w, acc_train, acc_test, iterrate
 
 end

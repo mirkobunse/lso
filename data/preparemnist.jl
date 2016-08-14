@@ -55,6 +55,8 @@ end
 ################
 # 7-vs-all split
 ################
+mkdir("../results")
+mkdir("../results/seven_vs_all")
 mkdir("./seven_vs_all")
 println("\nPreparing 7-vs-all test data...")
 preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .!= 7.0),
@@ -69,6 +71,7 @@ preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .!= 7.0),
 ################
 # 7-vs-6 split
 ################
+mkdir("../results/seven_vs_six")
 mkdir("./seven_vs_six")
 println("\nPreparing 7-vs-six test data...")
 preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .== 6.0),
