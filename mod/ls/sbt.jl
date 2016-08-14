@@ -3,29 +3,33 @@ import Obj.Objective
 
 
 """
-    sbt(obj [; c, α_0, η, maxiter])
+    sbt([; c, α_0, η, maxiter])
 
-    Returns a LineSearch strategy for stochastic Backtracking Line Search on given
-    objective function with given parametrization:
+    Returns a LineSearch strategy for stochastic Backtracking Line Search
+    with given parametrization:
 
           c: Armijo condition constant (default 1e-1)
         α_0: Initial step size value (default 1.0)
           η: Decrease rate (default: 0.1)
     maxiter: Max number of LS iterations (default: 10)
 """
-function sbt(obj::Objective; c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int32=10)
+function sbt(; c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int32=10)
+
     return LineSearch(
-        obj, # objective function
+        # name
+        "sbt",
 
         # strategy
-        function (w::Array{Float64,1}, s::Array{Float64,1}, b::Array{Int32,1}, fw::Float64, gw::Array{Float64,1})
-            return _sbt(obj, w, s, b, fw, gw, c, α_0, η, maxiter)
+        function (w::Array{Float64,1}, s::Array{Float64,1}, obj::Union{Objective,Void},
+                  b::Array{Int32,1}, fw::Float64, gw::Array{Float64,1})
+            return _sbt(w, s, obj, b, fw, gw, c, α_0, η, maxiter)
         end
     )
+
 end
 
 
-@fastmath function _sbt(obj::Objective, w::Array{Float64,1}, s::Array{Float64,1},
+@fastmath function _sbt(w::Array{Float64,1}, s::Array{Float64,1}, obj::Objective,
                         b::Array{Int32,1}, fw::Float64, gw::Array{Float64,1},
                         c::Float64, α_0::Float64, η::Float64, maxiter::Int32)
 

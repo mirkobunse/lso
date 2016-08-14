@@ -9,18 +9,18 @@ import Plotting
 
 
 function mnist_gd_bt_ensemble(; seed=1337, ϵ=1e-3, maxtime=60.0)
-    _mnist_ensemble(GdOpt.gd(), Ls.bt, seed, ϵ, maxtime)
+    _mnist_ensemble(GdOpt.gd(), Ls.bt(), seed, ϵ, maxtime)
 end
 
 function mnist_sgd_sbt_ensemble(; seed=1337, ϵ=0.0, maxtime=60.0, batchsize=10)
-    _mnist_ensemble(GdOpt.sgd(), Ls.sbt, seed, ϵ, maxtime, batchsize)
+    _mnist_ensemble(GdOpt.sgd(), Ls.sbt(), seed, ϵ, maxtime, batchsize)
 end
 
 function mnist_svrg_sbt_ensemble(; seed=1337, ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
-    _mnist_ensemble(GdOpt.svrg(estiter, strategy), Ls.sbt, seed, ϵ, maxtime, batchsize, assumedgrad=true)
+    _mnist_ensemble(GdOpt.svrg(estiter, strategy), Ls.sbt(), seed, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist_ensemble(optimizer::GdOptimizer, ls::Function, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
+function _mnist_ensemble(optimizer::GdOptimizer, ls::LineSearch, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
                 assumedgrad=false, frac1=.5)
 
     srand(seed)
@@ -159,14 +159,14 @@ end
 
 
 
-function _mnist_ensemble_opt(optimizer::GdOptimizer, ls::Function, X_train, y_train, X_test, y_test,
+function _mnist_ensemble_opt(optimizer::GdOptimizer, ls::LineSearch, X_train, y_train, X_test, y_test,
                              ϵ::Float64, maxtime::Float64, batchsize::Int32)
     
     println("\nNow considering $(size(X_train)[1]) training examples...")
     
     # optimize
     obj = Obj.logreg(X_train, y_train)
-    @time inf = GdOpt.opt(optimizer, ls(obj), obj, zeros(784),
+    @time inf = GdOpt.opt(optimizer, ls, obj, zeros(784),
                           ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
     w = inf[end, :w]
     iterrate = inf[end, :iter] / inf[end, :time]

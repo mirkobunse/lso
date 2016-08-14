@@ -37,18 +37,18 @@ import Plotting
 
 
 function mnist_gd_bt(; seed=1337, ϵ=1e-3, maxtime=60.0)
-    _mnist(GdOpt.gd(), Ls.bt, seed, ϵ, maxtime)
+    _mnist(GdOpt.gd(), Ls.bt(), seed, ϵ, maxtime)
 end
 
 function mnist_sgd_sbt(; seed=1337, ϵ=0.0, maxtime=60.0, batchsize=10)
-    _mnist(GdOpt.sgd(), Ls.sbt, seed, ϵ, maxtime, batchsize)
+    _mnist(GdOpt.sgd(), Ls.sbt(), seed, ϵ, maxtime, batchsize)
 end
 
 function mnist_svrg_sbt(; seed=1337, ϵ=1e-3, maxtime=60.0, batchsize=10, estiter=10, strategy=:last)
-    _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt, seed, ϵ, maxtime, batchsize, assumedgrad=true)
+    _mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), seed, ϵ, maxtime, batchsize, assumedgrad=true)
 end
 
-function _mnist(optimizer::GdOptimizer, ls::Function, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
+function _mnist(optimizer::GdOptimizer, ls::LineSearch, seed::Int32, ϵ::Float64, maxtime::Float64, batchsize::Int32=-1;
                 assumedgrad=false)
 
     srand(seed)
@@ -62,7 +62,7 @@ function _mnist(optimizer::GdOptimizer, ls::Function, seed::Int32, ϵ::Float64, 
 
     # tst
     obj = Obj.logreg(X_train, y_train)
-    @time inf = GdOpt.opt(optimizer, ls(obj), obj, zeros(784),
+    @time inf = GdOpt.opt(optimizer, ls, obj, zeros(784),
                           ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
     w = inf[end, :w]
     iterrate = inf[end, :iter] / inf[end, :time]
@@ -81,7 +81,7 @@ function _mnist(optimizer::GdOptimizer, ls::Function, seed::Int32, ϵ::Float64, 
         Plotting.display_plot(plot)
 
         optname = optimizer.name
-        lsname  = methods(ls).name
+        lsname  = ls.name
         outfile = "./mnist_$optname$(batchsize)_$lsname.pdf"
         print("\nDraw to $outfile? (y/N): ")
         if startswith(readline(STDIN), "y")

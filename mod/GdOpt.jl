@@ -87,7 +87,7 @@ end
             elseif opt < ϵ # stopping criterion satisfied?
                 break
             else
-                α, lsiter = Ls.ls(ls, w_0, s, b, fw, gw)
+                α, lsiter = Ls.ls(ls, w_0, s, obj, b, fw, gw)
                 w_0 += α*s
             end
 
