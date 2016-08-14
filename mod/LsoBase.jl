@@ -83,6 +83,14 @@ function push_acc!(acc::DataFrame, gdopt::ASCIIString, ls::ASCIIString, data::AS
 end
 
 
+"""
+    store(filename, df)
+
+    Store the given DataFrame, e.g, inf or acc, to the given location.
+"""
+store(df::DataFrame, filename::ASCIIString) = writetable(filename, df)
+
+
 acc(y_true::Array{Float64, 1}, y_pred::Array{Float64, 1}) = mean(y_true .== y_pred)
 
 

@@ -26,12 +26,12 @@ mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last) =
 
 
 """
-    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, plotting])
+    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, storage])
 
     Evaluate optimizer on MNIST data with Logistic Regression.
 """
 function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-               ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, plotting=true)
+               ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, storage=true)
 
     println("\nRunning Eval.mnist with seed $seed on $(gdopt.name) with $(ls.name)...")
     srand(seed)
@@ -43,9 +43,11 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
             ϵ, maxtime, batchsize
     )
 
-    if plotting
-        Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad),
-            "./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf")
+    # plotting and storage
+    if storage
+        filename = "./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
+        LsoBase.store(inf, filename * ".csv")
+        Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad), filename * ".pdf")
     end
     
     println("")
@@ -58,12 +60,12 @@ end
 
 
 """
-    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, plotting])
+    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, storage])
 
     Evaluate optimizer on MNIST data with historic boosting.
 """
 function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-                     ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5, plotting=true)
+                     ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5, storage=true)
     
     println("\nRunning Eval.mnist_boost with seed $seed on $(gdopt.name) with $(ls.name)...")
     srand(seed)
@@ -159,10 +161,11 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     inf3[:iter] += inf2[end, :iter]
     inf = vcat(inf1, inf2, inf3)
 
-    # plotting
-    if plotting
-        Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad),
-            "./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf")
+    # plotting and storage
+    if storage
+        filename = "./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
+        LsoBase.store(inf, filename * ".csv")
+        Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad), filename * ".pdf")
     end
     
     println("")
