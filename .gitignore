@@ -2,3 +2,5 @@
 
 data/*.dlm
 data/*/*.dlm
+
+results/*/*
