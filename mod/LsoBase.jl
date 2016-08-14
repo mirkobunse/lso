@@ -64,6 +64,13 @@ function push_inf!(inf::DataFrame, w::Array{Float64, 1},
 end
 
 
+function push_truth!(inf::DataFrame, f::Function, g::Function)
+    println("\nComputing true f and opt values...")
+    inf[:f_true]   = [ f(w)               for w in inf[:w] ]
+    inf[:opt_true] = [ vecnorm(g(w), Inf) for w in inf[:w] ]
+end
+
+
 """
     push_acc!(acc, gdopt, ls, data, trainsize, trainacc, testacc, time, iterrate)
 

@@ -73,10 +73,10 @@ end
             time   = Base.time() - start
             maxf   = max(fw,  maxf)
             minopt = min(opt, minopt)
-            if time - storagetime > .25 || k == 1 || time > maxtime
+            if time - storagetime > .1 || k == 1 || time > maxtime
                 println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter maxf minopt)
                 LsoBase.push_inf!(inf, w_0, maxf, minopt, k-1, lsiter, time)
-                storagetime = floor(time*4) / 4
+                storagetime = floor(time*10) / 10
                 minopt = Inf
                 maxf   = -Inf
             end

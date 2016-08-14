@@ -6,7 +6,6 @@ using Gadfly
 using Colors
 
 import LsoBase
-import Obj
 
 
 """
@@ -37,26 +36,18 @@ end
     Plot development of optimality and function value, as given by the DataFrame inf.
     Returns Gadfly plot object.
 """
-function plot_inf(inf::DataFrame, obj=nothing, assumedgrad=true; vlines=nothing)
-
-    f    = inf[:f]
-    opt  = inf[:opt]
-    if obj != nothing
-      println("Computing true f and opt values...")
-        f = [ obj.f(w)               for w in inf[:w] ]
-      opt = [ vecnorm(obj.g(w), Inf) for w in inf[:w] ]
-    end
+function plot_inf(inf::DataFrame, assumedgrad=true; vlines=nothing)
 
     println("Plotting...")
     df = vcat(
         DataFrame(
             x = inf[:time],
-            y = opt,
+            y = inf[:opt_true],
             name = [ "Optimality" for i=1:length(inf[:time]) ]  # ‖∇f(x)‖∞
         ),
         DataFrame(
             x = inf[:time],
-            y = f,
+            y = inf[:f_true],
             name = [ "Function Value" for i=1:length(inf[:time]) ]  # f(x)
         )
     )
