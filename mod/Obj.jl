@@ -81,6 +81,9 @@ function randbatch(obj::Objective, batchsize::Int32=1)
   if batchsize == 1
     return [rand(1:obj.dim)]
   else
+    if obj.dim < batchsize
+      batchsize = obj.dim
+    end
     return randperm(obj.dim)[1:batchsize]
   end
 end

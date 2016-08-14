@@ -71,7 +71,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                         X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", e)
                 end
                 printiter()
 
@@ -81,7 +81,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                               X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", e)
                 end
                 printiter()
             end
@@ -98,7 +98,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                         X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", e)
                 end
                 printiter()
 
@@ -108,7 +108,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                               X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", e)
                 end
                 printiter()
             end
