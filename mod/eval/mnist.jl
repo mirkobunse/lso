@@ -232,7 +232,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     # concatenate inf
     inf2[:time] += time1
     inf2[:iter] += inf1[end, :iter]
-    inf3[:time] += time2
+    inf3[:time] += time2 + time1
     inf3[:iter] += inf2[end, :iter]
     inf = vcat(inf1, inf2, inf3)
 
