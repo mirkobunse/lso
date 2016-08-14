@@ -25,7 +25,8 @@ end
 
     Draw plot to file.
 """
-function draw_plot(plot, filename::ASCIIString="out.pdf")
+function draw_plot(plot, filename::ASCIIString="./out.pdf")
+    println("Drawing to $filename...")
     draw(PDF(filename, 15cm, 9cm), plot)
 end
 

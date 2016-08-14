@@ -19,21 +19,19 @@ mnist_sgd_boost(batchsize=1) = mnist_boost(GdOpt.sgd(), Ls.sbt(), ϵ=0.0, batchs
 
 
 # Quick test functions for SVRG.
-function mnist_svrg(; batchsize=10, estiter=10, strategy=:last)
+mnist_svrg(; batchsize=10, estiter=10, strategy=:last) =
     mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, assumedgrad=true)
-end
-function mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last)
+mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last) =
     mnist_boost(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, assumedgrad=true)
-end
 
 
 """
-    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad])
+    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, plotting])
 
-    Evaluate optimizer on MNIST data.
+    Evaluate optimizer on MNIST data with Logistic Regression.
 """
 function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-               ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false)
+               ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false, plotting=true)
 
     srand(seed)
     X_train, y_train, X_test, y_test = _mnist_data(folder)  # read data
@@ -44,27 +42,27 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
             ϵ, maxtime, batchsize
     )
 
-    # ask user for plot
-    outfile = "./results/$folder/$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf"
-    print("\nDraw to $outfile? (y/N): ")
-    if startswith(readline(STDIN), "y")
-        println("Plotting...")
-        plot = Plotting.plot_inf(inf, obj, assumedgrad)
-        println("Drawing to $outfile...")
-        Plotting.draw_plot(plot, outfile)
+    if plotting
+        Plotting.draw_plot(Plotting.plot_inf(inf, obj, assumedgrad),
+            "./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf")
     end
     
     println("")
     df = LsoBase.new_acc()
-    LsoBase.push_acc!(df, gdopt.name, ls.name, "LogReg", folder, size(X_train)[1], acc_train, acc_test, time, iterrate)
+    LsoBase.push_acc!(df, gdopt.name, ls.name, "LogReg",
+                      folder, size(X_train)[1], acc_train, acc_test, time, iterrate)
     return df
 
 end
 
 
+"""
+    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, plotting])
 
+    Evaluate optimizer on MNIST data with historic boosting.
+"""
 function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-                     ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5)
+                     ϵ::Float64=1e-3, maxtime::Float64=60.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5, plotting=true)
     
     srand(seed)
     X_train, y_train, X_test, y_test = _mnist_data(folder)  # read data
@@ -150,22 +148,17 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
                       size(X_train3)[1], acc_train3, acc_test3, time3,   iterrate3)
     LsoBase.push_acc!(df, gdopt.name, ls.name, folder, "Boosting B1-3",
                       numex,             acc_train,  acc_test,  timesum, iterrate)
-    print_with_color(:bold, "\n", string(df), "\n")
+    println(string(df), "\n")
 
-    # ask user for plot
-    outfile = "./results/$folder/boost_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf"
-    print("\nDraw to $outfile? (y/N): ")
-    if startswith(readline(STDIN), "y")
-        println("Plotting...")
+    # plotting
+    if plotting
         inf2[:time] += time1
         inf2[:iter] += inf1[end, :iter]
         inf3[:time] += time2
         inf3[:iter] += inf2[end, :iter]
         inf = vcat(inf1, inf2, inf3)
-        # vlines = [inf1[end, :time], inf2[end, :time], inf3[end, :time]]
-        plot = Plotting.plot_inf(inf, Obj.logreg(X_train, y_train), assumedgrad)
-        println("Drawing to $outfile...")
-        Plotting.draw_plot(plot, outfile)
+        Plotting.draw_plot(Plotting.plot_inf(inf, Obj.logreg(X_train, y_train), assumedgrad),
+            "./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).pdf")
     end
     
     println("")
@@ -202,7 +195,7 @@ function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test
     acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
     println("\n  Training set acc: $acc_train")
     println(  "      Test set acc: $acc_test")
-    println(  "  Iterations / sec: $iterrate")
+    println(  "  Iterations / sec: $iterrate\n")
 
     return inf, obj, w, acc_train, acc_test, time, iterrate
 
