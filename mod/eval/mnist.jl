@@ -19,10 +19,10 @@ mnist_sgd_boost(batchsize=1) = mnist_boost(GdOpt.sgd(), Ls.sbt(), ϵ=0.0, batchs
 
 
 # Quick test functions for SVRG.
-mnist_svrg(; batchsize=10, estiter=10, strategy=:last) =
-    mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, assumedgrad=true)
+mnist_svrg(; batchsize=10, estiter=10, strategy=:last, ϵ=0.0) =
+    mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, ϵ=ϵ, assumedgrad=true)
 mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last) =
-    mnist_boost(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, assumedgrad=true)
+    mnist_boost(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, ϵ=ϵ, assumedgrad=true)
 
 
 """
@@ -65,26 +65,51 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
         for gdopt in gdopts
 
             if gdopt.name == "gd"
-                df = vcat(df, mnist(gdopt, Ls.bt(), folder, seed,
-                                    X_train=X_train, y_train=y_train,
-                                    X_test=X_test, y_test=y_test))
+                try
+                    df = vcat(df, mnist(gdopt, Ls.bt(), folder, seed,
+                                        X_train=X_train, y_train=y_train,
+                                        X_test=X_test, y_test=y_test))
+                catch e
+                    warn(e)
+                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                end
                 printiter()
 
-                df = vcat(df, mnist_boost(gdopt, Ls.bt(), folder, seed,
-                                          X_train=X_train, y_train=y_train,
-                                          X_test=X_test, y_test=y_test))
+                try
+                    df = vcat(df, mnist_boost(gdopt, Ls.bt(), folder, seed,
+                                              X_train=X_train, y_train=y_train,
+                                              X_test=X_test, y_test=y_test))
+                catch e
+                    warn(e)
+                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                end
                 printiter()
             end
 
             for batchsize in batchsizes
-                df = vcat(df, mnist(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize,
-                                    X_train=X_train, y_train=y_train,
-                                    X_test=X_test, y_test=y_test))
+                ϵ=1e-3
+                if (gdopt.name == "sgd" && batchsize != 100) || (gdopt.name == "svrg" && batchsize == 1)
+                    ϵ=0.0
+                end
+
+                try
+                    df = vcat(df, mnist(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize, ϵ=ϵ,
+                                        X_train=X_train, y_train=y_train,
+                                        X_test=X_test, y_test=y_test))
+                catch e
+                    warn(e)
+                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                end
                 printiter()
 
-                df = vcat(df, mnist_boost(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize,
-                                          X_train=X_train, y_train=y_train,
-                                          X_test=X_test, y_test=y_test))
+                try
+                    df = vcat(df, mnist_boost(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize, ϵ=ϵ,
+                                              X_train=X_train, y_train=y_train,
+                                              X_test=X_test, y_test=y_test))
+                catch e
+                    warn(e)
+                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name).dlm", e)
+                end
                 printiter()
             end
 
