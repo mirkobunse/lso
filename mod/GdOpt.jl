@@ -77,7 +77,7 @@ end
             if time - storagetime > .1 || k == 1 || time > maxtime
                 LsoBase.push_inf!(inf, w_0, maxf, minopt, k-1, lsiter, time)
                 storagetime = floor(time*10) / 10
-                if (time - printtime > 1 || k == 1 | time > maxtime)
+                if time - printtime > 1.0 || k == 1 || time > maxtime
                     println(@sprintf "%6d | %6.3f | %3d | %9.3e | %9.3e"  k-1 time lsiter maxf minopt)
                     printtime = floor(time)
                 end
