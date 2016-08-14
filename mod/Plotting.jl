@@ -82,7 +82,7 @@ function plot_inf(inf::DataFrame, assumedgrad=true; maxtime=30.0, vlines=nothing
                 end
                 return label
             end),
-            Guide.xticks(ticks=collect(0:10:30)), Guide.xlabel("\n\n   Time  \n(Iteration)"), Guide.ylabel(""),
+            Guide.xticks(ticks=collect(0.0:10.0:maxtime)), Guide.xlabel("\n\n   Time  \n(Iteration)"), Guide.ylabel(""),
             Guide.colorkey(""), colorscale]
 
     if vlines == nothing
