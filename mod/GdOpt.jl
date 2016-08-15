@@ -74,7 +74,7 @@ end
             time   = Base.time() - start
             maxf   = max(fw,  maxf)
             minopt = min(opt, minopt)
-            if time - storagetime > .1 || k == 1 || time > maxtime
+            if time - storagetime > .1 || k == 1 || time > maxtime || opt < ϵ
                 LsoBase.push_inf!(inf, w_0, maxf, minopt, k-1, lsiter, time)
                 storagetime = floor(time*10) / 10
                 if time - printtime > 1.0 || k == 1 || time > maxtime
@@ -86,9 +86,7 @@ end
             end
 
             # take step or stop
-            if time > maxtime # max time over?
-                break
-            elseif opt < ϵ # stopping criterion satisfied?
+            if time > maxtime || opt < ϵ    # stopping criterion satisfied?
                 break
             else
                 α, lsiter = Ls.ls(ls, w_0, s, obj, b, fw, gw)
