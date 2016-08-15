@@ -305,25 +305,38 @@ end
 function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test, y_test,
                     ϵ::Float64, maxtime::Float64, batchsize::Int32)
     
-    println("\nNow considering $(size(X_train)[1]) training examples...")
-    
-    # optimize
+    w_0 = zeros(784)
     obj = Obj.logreg(X_train, y_train)
-    @time inf = GdOpt.opt(gdopt, ls, obj, zeros(784),
-                          ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
-    w = inf[end, :w]
-    time = inf[end, :time]
-    iterrate = inf[end, :iter] / inf[end, :time]
 
-    LsoBase.push_truth!(inf, obj.f, obj.g)  # true f and opt values
+    if size(X_train)[1] == 0
+        println("\nSkipping experiment because of empty training set...")
+        inf = LsoBase.new_inf()
+        LsoBase.push_inf!(inf, w_0, 1e4, 1e4, 0, 0, 0.0)
+        LsoBase.push_truth!(inf, obj.f, obj.g)  # true f and opt values
+        return inf, obj, w_0, 0.0, 0.0, 0.0, 0.0
+    else
 
-    # acc
-    acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
-    acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
-    println("\n  Training set acc: $acc_train")
-    println(  "      Test set acc: $acc_test")
-    println(  "  Iterations / sec: $iterrate\n")
+        println("\nNow considering $(size(X_train)[1]) training examples...")
+        
+        # optimize
+        
+        @time inf = GdOpt.opt(gdopt, ls, obj, w_0,
+                              ϵ=ϵ, maxtime=maxtime, batchsize=batchsize)
+        w = inf[end, :w]
+        time = inf[end, :time]
+        iterrate = inf[end, :iter] / inf[end, :time]
 
-    return inf, obj, w, acc_train, acc_test, time, iterrate
+        LsoBase.push_truth!(inf, obj.f, obj.g)  # true f and opt values
+
+        # acc
+        acc_train = LsoBase.acc(y_train, Obj.logreg_predict(w, X_train))
+        acc_test  = LsoBase.acc(y_test, Obj.logreg_predict(w, X_test))
+        println("\n  Training set acc: $acc_train")
+        println(  "      Test set acc: $acc_test")
+        println(  "  Iterations / sec: $iterrate\n")
+
+        return inf, obj, w, acc_train, acc_test, time, iterrate
+
+    end
 
 end
