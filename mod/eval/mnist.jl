@@ -127,7 +127,8 @@ end
     Evaluate optimizer on MNIST data with Logistic Regression.
 """
 function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-               ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, storage=true,
+               λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1,
+               assumedgrad=false, storage=true,
                X_train::Union{Void,Array{Float64,2}}=nothing, y_train::Union{Void,Array{Float64,1}}=nothing,
                X_test::Union{Void,Array{Float64,2}}=nothing,  y_test::Union{Void,Array{Float64,1}}=nothing)
 
@@ -138,7 +139,7 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
     # optimize
     inf, obj, w, acc_train, acc_test, time, iterrate = _mnist_opt(
             gdopt, ls, X_train, y_train, X_test, y_test,
-            ϵ, maxtime, batchsize
+            λ, ϵ, maxtime, batchsize
     )
 
     # plotting and storage
@@ -163,7 +164,8 @@ end
     Evaluate optimizer on MNIST data with historic boosting.
 """
 function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-                     ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1, assumedgrad=false, frac1=.5, storage=true,
+                     λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1,
+                     assumedgrad=false, frac1=.5, storage=true,
                      X_train::Union{Void,Array{Float64,2}}=nothing, y_train::Union{Void,Array{Float64,1}}=nothing,
                      X_test::Union{Void,Array{Float64,2}}=nothing,  y_test::Union{Void,Array{Float64,1}}=nothing)
     
@@ -183,7 +185,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     # optimize
     inf1, obj1, w1, acc_train1, acc_test1, time1, iterrate1 = _mnist_opt(
             gdopt, ls, X_train1, y_train1, X_test, y_test,
-            ϵ, maxtime, batchsize
+            λ, ϵ, maxtime, batchsize
     )
 
     ################
@@ -201,7 +203,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     # optimize
     inf2, obj2, w2, acc_train2, acc_test2, time2, iterrate2 = _mnist_opt(
             gdopt, ls, X_train2, y_train2, X_test, y_test,
-            ϵ, maxtime, batchsize
+            λ, ϵ, maxtime, batchsize
     )
 
     ################
@@ -216,7 +218,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     # optimize
     inf3, obj3, w3, acc_train3, acc_test3, time3, iterrate3 = _mnist_opt(
             gdopt, ls, X_train3, y_train3, X_test, y_test,
-            ϵ, maxtime, batchsize
+            λ, ϵ, maxtime, batchsize
     )
 
     ################
@@ -303,10 +305,10 @@ end
 
 
 function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test, y_test,
-                    ϵ::Float64, maxtime::Float64, batchsize::Int32)
+                    λ::Float64, ϵ::Float64, maxtime::Float64, batchsize::Int32)
     
     w_0 = zeros(784)
-    obj = Obj.logreg(X_train, y_train)
+    obj = Obj.logreg(X_train, y_train, λ)
 
     if size(X_train)[1] == 0
         println("\nSkipping experiment because of empty training set...")
