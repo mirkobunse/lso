@@ -49,7 +49,7 @@ function ls(linesearch::LineSearch, w::Array{Float64,1}, s::Array{Float64,1},
 
     # sanitize arguments
     if obj != nothing
-      if isnan(fw) &&
+      if isnan(fw)
           if length(b) == 0
               fw = Obj.f(obj, w)
           else
