@@ -14,6 +14,8 @@ import MNIST
 function preparemnist(Xy, func1, func2, p_X, p_y, maxclasssize)
     X, y = Xy
 
+    srand(1337)
+
     # split into classes
     X_a = X[:,func1(y)]    # X[:,(y.==7.0)]
     X_b = X[:,func2(y)]    # X[:,(y.!=7.0)]

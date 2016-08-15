@@ -21,7 +21,7 @@ mnist_sgd_boost(batchsize=1) = mnist_boost(GdOpt.sgd(), Ls.sbt(), ϵ=0.0, batchs
 # Quick test functions for SVRG.
 mnist_svrg(; batchsize=10, estiter=10, strategy=:last, ϵ=0.0) =
     mnist(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, ϵ=ϵ, assumedgrad=true)
-mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last) =
+mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last, ϵ=0.0) =
     mnist_boost(GdOpt.svrg(estiter, strategy), Ls.sbt(), batchsize=batchsize, ϵ=ϵ, assumedgrad=true)
 
 
@@ -71,7 +71,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                         X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", e)
+                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
                 end
                 printiter()
 
@@ -81,7 +81,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                               X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", e)
+                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
                 end
                 printiter()
             end
@@ -98,7 +98,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                         X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", e)
+                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
                 end
                 printiter()
 
@@ -108,7 +108,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                                               X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", e)
+                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
                 end
                 printiter()
             end
