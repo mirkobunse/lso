@@ -19,7 +19,7 @@ end
 svrg(estiter::Int32=10, strategy::Symbol=:last) = GdOptimizer(
 
     # name
-    "svrg-"*string(strategy)*"-"*string(estiter),
+    "svrg-"*string(estiter)*"-"*string(strategy),
 
     # initial state
     SvrgState(Float64[], Float64[]),    # correct values will be set in first iteration
