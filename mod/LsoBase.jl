@@ -28,8 +28,8 @@ new_inf() = DataFrame(
                 w      = Array{Float64, 1}[],
                 f      = Float64[],
                 opt    = Float64[],
-                iter   = Int32[],
-                lsiter = Int32[],
+                iter   = Int[],
+                lsiter = Int[],
                 time   = Float64[]
             )
 
@@ -41,11 +41,11 @@ new_inf() = DataFrame(
 new_acc() = DataFrame(
                 gdopt      = ASCIIString[],
                 ls         = ASCIIString[],
-                batchsize  = Int32[],
-                seed       = Int32[],
+                batchsize  = Int[],
+                seed       = Int[],
                 data       = ASCIIString[],
                 classifier = ASCIIString[],
-                trainsize  = Int32[],
+                trainsize  = Int[],
                 trainacc   = Float64[],
                 testacc    = Float64[],
                 time       = Float64[],
@@ -59,7 +59,7 @@ new_acc() = DataFrame(
     Will push the given iteration info to DataFrame inf.
 """
 function push_inf!(inf::DataFrame, w::Array{Float64, 1},
-                   f::Float64, opt::Float64, iter::Int32, lsiter::Int32, time::Float64=0.0)
+                   f::Float64, opt::Float64, iter::Int, lsiter::Int, time::Float64=0.0)
     push!(inf, (w, f, opt, iter, lsiter, time))
 end
 
@@ -76,9 +76,9 @@ end
 
     Will push the given classifier info to DataFrame acc.
 """
-function push_acc!(acc::DataFrame, gdopt::ASCIIString, ls::ASCIIString, batchsize::Int32, seed::Int32,
+function push_acc!(acc::DataFrame, gdopt::ASCIIString, ls::ASCIIString, batchsize::Int, seed::Int,
                    data::ASCIIString, classifier::ASCIIString,
-                   trainsize::Int32, trainacc::Float64, testacc::Float64, time::Float64, iterrate::Float64)
+                   trainsize::Int, trainacc::Float64, testacc::Float64, time::Float64, iterrate::Float64)
     push!(acc, (gdopt, ls, batchsize, seed, data, classifier, trainsize, trainacc, testacc, time, iterrate))
 end
 

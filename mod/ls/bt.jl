@@ -13,7 +13,7 @@ import Obj.Objective
           η: Decrease rate (default: 0.1)
     maxiter: Max number of LS iterations (default: 10)
 """
-function bt(; c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int32=10)
+function bt(; c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int=10)
 
     return LineSearch(
         # name
@@ -21,7 +21,7 @@ function bt(; c::Float64=1e-1, α_0::Float64=1.0, η::Float64=0.1, maxiter::Int3
 
         # strategy
         function (w::Array{Float64,1}, s::Array{Float64,1}, obj::Union{Objective,Void},
-                  b::Array{Int32,1}, fw::Float64, gw::Array{Float64,1})
+                  b::Array{Int,1}, fw::Float64, gw::Array{Float64,1})
             return _bt(w, s, obj, fw, gw, c, α_0, η, maxiter)   # b is ignored
         end
     )
@@ -31,7 +31,7 @@ end
 
 @fastmath function _bt(w::Array{Float64,1}, s::Array{Float64,1}, obj::Objective,
                        fw::Float64, gw::Array{Float64,1},
-                       c::Float64, α_0::Float64, η::Float64, maxiter::Int32)
+                       c::Float64, α_0::Float64, η::Float64, maxiter::Int)
 
     @inbounds gws = (gw'*s)[1]
     for i = 1:maxiter

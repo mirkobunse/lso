@@ -44,7 +44,7 @@ end
     This helper function should ease the access to objects of type Ls.LineSearch.
 """
 function ls(linesearch::LineSearch, w::Array{Float64,1}, s::Array{Float64,1},
-            obj::Union{Objective,Void}=nothing, b::Array{Int32,1}=Int32[],
+            obj::Union{Objective,Void}=nothing, b::Array{Int,1}=Int[],
             fw::Float64=NaN, gw::Array{Float64,1}=Float64[])
 
     # sanitize arguments

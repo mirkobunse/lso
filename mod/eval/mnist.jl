@@ -126,8 +126,8 @@ end
 
     Evaluate optimizer on MNIST data with Logistic Regression.
 """
-function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-               λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1,
+function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int=1337;
+               λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int=-1,
                assumedgrad=false, storage=true,
                X_train::Union{Void,Array{Float64,2}}=nothing, y_train::Union{Void,Array{Float64,1}}=nothing,
                X_test::Union{Void,Array{Float64,2}}=nothing,  y_test::Union{Void,Array{Float64,1}}=nothing)
@@ -163,8 +163,8 @@ end
 
     Evaluate optimizer on MNIST data with historic boosting.
 """
-function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int32=1337;
-                     λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int32=-1,
+function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int=1337;
+                     λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int=-1,
                      assumedgrad=false, frac1=.5, storage=true,
                      X_train::Union{Void,Array{Float64,2}}=nothing, y_train::Union{Void,Array{Float64,1}}=nothing,
                      X_test::Union{Void,Array{Float64,2}}=nothing,  y_test::Union{Void,Array{Float64,1}}=nothing)
@@ -178,7 +178,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     ################
 
     # random subset of relative size frac1
-    train1 = randperm(length(y_train))[1:convert(Int32, floor(frac1*length(y_train)))]
+    train1 = randperm(length(y_train))[1:convert(Int, floor(frac1*length(y_train)))]
     X_train1 = X_train[train1,:]
     y_train1 = y_train[train1]
 
@@ -305,7 +305,7 @@ end
 
 
 function _mnist_opt(gdopt::GdOptimizer, ls::LineSearch, X_train, y_train, X_test, y_test,
-                    λ::Float64, ϵ::Float64, maxtime::Float64, batchsize::Int32)
+                    λ::Float64, ϵ::Float64, maxtime::Float64, batchsize::Int)
     
     w_0 = zeros(784)
     obj = Obj.logreg(X_train, y_train, λ)
