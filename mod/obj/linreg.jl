@@ -15,9 +15,6 @@ function _linreg_f(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1}
                    b::Array{Int,1}=Int[])
     if length(b) == 0
         return vecnorm(y - X*w)^2 / (2*length(y))
-    elseif length(b) == 1   # yes, some machines (or julia versions?) require that
-        i = b[1]
-        vecnorm(y[i] - X[i,:]*w)^2 / 2
     else
         return vecnorm(y[b] - X[b,:]*w)^2 / (2*length(b))
     end
@@ -27,9 +24,6 @@ function _linreg_g(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1}
                    b::Array{Int,1}=Int[])
     if length(b) == 0
         return vec(X' * (X*w - y)) ./ length(y)
-    elseif length(b) == 1   # yes, some machines (or julia versions?) require that
-        i = b[1]
-        return vec(X[i,:]' * (X[i,:]*w - y[i]))
     else
         return vec(X[b,:]' * (X[b,:]*w - y[b])) ./ length(b)
     end
