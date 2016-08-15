@@ -1,6 +1,5 @@
 *.pdf
 
-data/*.dlm
-data/*/*.dlm
+data/*/*/*.dlm
 
-results/*/*
+results/*/*/*

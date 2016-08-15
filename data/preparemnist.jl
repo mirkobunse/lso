@@ -11,10 +11,10 @@
 # Pkg.add("MNIST")
 import MNIST
 
-function preparemnist(Xy, func1, func2, p_X, p_y, maxclasssize)
+function preparemnist(Xy, func1, func2, p_X, p_y, maxclasssize, seed)
     X, y = Xy
 
-    srand(1337)
+    srand(seed)
 
     # split into classes
     X_a = X[:,func1(y)]    # X[:,(y.==7.0)]
@@ -55,37 +55,54 @@ end
 
 
 ################
-# 7-vs-all split
+# folders
 ################
-mkdir("../results")
-mkdir("../results/seven_vs_all")
-mkdir("./seven_vs_all")
-println("\nPreparing 7-vs-all test data...")
-preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .!= 7.0),
-             "./seven_vs_all/X_test.dlm", "./seven_vs_all/y_test.dlm", 2500)
-gc()
-
-println("\nPreparing 7-vs-all training data...")
-preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .!= 7.0),
-             "./seven_vs_all/X_train.dlm", "./seven_vs_all/y_train.dlm", 1000)
-
+for folder in ["./seven_vs_all", "../results", "../results/seven_vs_all",
+               "./seven_vs_six", "../results/seven_vs_six"]
+    try
+        mkdir(folder)
+    end
+end
 
 ################
-# 7-vs-6 split
+# splits
 ################
-mkdir("../results/seven_vs_six")
-mkdir("./seven_vs_six")
-println("\nPreparing 7-vs-six test data...")
-preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .== 6.0),
-             "./seven_vs_six/X_test.dlm", "./seven_vs_six/y_test.dlm", 2500)
-gc()
+for seed in 1337:(1337+9)
+    println("\n", repeat("-", 10), "Seed $seed", repeat("-", 10))
+    try
+        mkdir("./seven_vs_all/$seed")
+    end
+    try
+        mkdir("./seven_vs_six/$seed")
+    end
+    try
+        mkdir("../results/seven_vs_all/$seed")
+    end
+    try
+        mkdir("../results/seven_vs_six/$seed")
+    end
 
-println("\nPreparing 7-vs-all training data...")
-preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .== 6.0),
-             "./seven_vs_six/X_train.dlm", "./seven_vs_six/y_train.dlm", 1000)
+    println("\nPreparing 7-vs-all TEST data...")
+    preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .!= 7.0),
+                 "./seven_vs_all/$seed/X_test.dlm", "./seven_vs_all/$seed/y_test.dlm", 2500, seed)
+    gc()
 
+    println("\nPreparing 7-vs-all TRAINING data...")
+    preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .!= 7.0),
+                 "./seven_vs_all/$seed/X_train.dlm", "./seven_vs_all/$seed/y_train.dlm", 1000, seed)
+    gc()
+
+    println("\nPreparing 7-vs-six TEST data...")
+    preparemnist(MNIST.traindata(), (y -> y .== 7.0), (y -> y .== 6.0),
+                 "./seven_vs_six/$seed/X_test.dlm", "./seven_vs_six/$seed/y_test.dlm", 2500, seed)
+    gc()
+
+    println("\nPreparing 7-vs-six TRAINING data...")
+    preparemnist(MNIST.testdata(), (y -> y .== 7.0), (y -> y .== 6.0),
+                 "./seven_vs_six/$seed/X_train.dlm", "./seven_vs_six/$seed/y_train.dlm", 1000, seed)
+    gc()
+end
 
 println("\nDone.\n")
-
 
 return nothing

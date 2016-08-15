@@ -31,7 +31,7 @@ mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last, ϵ=0.0) =
     Massive evaluation using all of the optimizers with different parameters and seeds.
     This may run up to 12hrs.
 """
-function mnist_massive(folder::ASCIIString="seven_vs_all")
+function mnist_massive(basefolder::ASCIIString="seven_vs_all")
 
     # collect experiments
     seeds  = 1337:(1337+9)  # try 10 seeds
@@ -49,8 +49,6 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
         return nothing
     end
 
-    X_train, y_train, X_test, y_test = _mnist_data(folder)  # read data
-
     # iteration printer
     expiter = 0
     printiter(add::Int) = println("\n", repeat("-", 25),
@@ -61,27 +59,30 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
 
     # go for it
     for seed in seeds
+
+        X_train, y_train, X_test, y_test = _mnist_data(basefolder*"/"*string(seed))  # read data
+
         df = LsoBase.new_acc()
         for gdopt in gdopts
 
             if gdopt.name == "gd"
                 try
-                    df = vcat(df, mnist(gdopt, Ls.bt(), folder, seed,
+                    df = vcat(df, mnist(gdopt, Ls.bt(), basefolder, seed,
                                         X_train=X_train, y_train=y_train,
                                         X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
+                    writedlm("./results/$basefolder/$seed/$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
                 end
                 printiter(1)
 
                 try
-                    df = vcat(df, mnist_boost(gdopt, Ls.bt(), folder, seed,
+                    df = vcat(df, mnist_boost(gdopt, Ls.bt(), basefolder, seed,
                                               X_train=X_train, y_train=y_train,
                                               X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
+                    writedlm("./results/$basefolder/$seed/boost_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
                 end
                 printiter(3) # boosting has 3 iterations
             end
@@ -93,28 +94,28 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                 end
 
                 try
-                    df = vcat(df, mnist(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize, ϵ=ϵ,
+                    df = vcat(df, mnist(gdopt, Ls.sbt(), basefolder, seed, batchsize=batchsize, ϵ=ϵ,
                                         X_train=X_train, y_train=y_train,
                                         X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
+                    writedlm("./results/$basefolder/$seed/$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
                 end
                 printiter(1)
 
                 try
-                    df = vcat(df, mnist_boost(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize, ϵ=ϵ,
+                    df = vcat(df, mnist_boost(gdopt, Ls.sbt(), basefolder, seed, batchsize=batchsize, ϵ=ϵ,
                                               X_train=X_train, y_train=y_train,
                                               X_test=X_test, y_test=y_test))
                 catch e
                     warn(e)
-                    writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
+                    writedlm("./results/$basefolder/$seed/boost_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
                 end
                 printiter(3) # boosting has 3 iterations
             end
 
         end
-        LsoBase.store(df, "./results/$folder/$(seed).csv")
+        LsoBase.store(df, "./results/$basefolder/$seed/acc.csv")
     end
 
     println("\nDone!\n")
@@ -122,11 +123,11 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
 end
 
 """
-    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, storage])
+    mnist(gdopt, ls, [, basefolder, seed; ϵ, maxtime, batchsize, assumedgrad, storage])
 
     Evaluate optimizer on MNIST data with Logistic Regression.
 """
-function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int=1337;
+function mnist(gdopt::GdOptimizer, ls::LineSearch, basefolder::ASCIIString="seven_vs_all", seed::Int=1337;
                λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int=-1,
                assumedgrad=false, storage=true,
                X_train::Union{Void,Array{Float64,2}}=nothing, y_train::Union{Void,Array{Float64,1}}=nothing,
@@ -134,7 +135,7 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
 
     println("\nRunning Eval.mnist with seed $seed on $(gdopt.name) with $(ls.name) and batchsize $batchsize...")
     srand(seed)
-    X_train, y_train, X_test, y_test = _mnist_data(folder, X_train, y_train, X_test, y_test)  # read data
+    X_train, y_train, X_test, y_test = _mnist_data(basefolder*"/"*string(seed), X_train, y_train, X_test, y_test)  # read data
 
     # optimize
     inf, obj, w, acc_train, acc_test, time, iterrate = _mnist_opt(
@@ -144,14 +145,14 @@ function mnist(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs
 
     # plotting and storage
     if storage
-        filename = "./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
+        filename = "./results/$basefolder/$seed/$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
         LsoBase.store(inf, filename * ".csv")
         Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad), filename * ".pdf")
     end
     
     println("")
     df = LsoBase.new_acc()
-    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, folder, "LogReg",
+    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, basefolder, "LogReg",
                       size(X_train)[1], acc_train, acc_test, time, iterrate)
     return df
 
@@ -159,11 +160,11 @@ end
 
 
 """
-    mnist(gdopt, ls, [, folder, seed; ϵ, maxtime, batchsize, assumedgrad, storage])
+    mnist(gdopt, ls, [, basefolder, seed; ϵ, maxtime, batchsize, assumedgrad, storage])
 
     Evaluate optimizer on MNIST data with historic boosting.
 """
-function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="seven_vs_all", seed::Int=1337;
+function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, basefolder::ASCIIString="seven_vs_all", seed::Int=1337;
                      λ::Float64=0.0, ϵ::Float64=1e-3, maxtime::Float64=30.0, batchsize::Int=-1,
                      assumedgrad=false, frac1=.5, storage=true,
                      X_train::Union{Void,Array{Float64,2}}=nothing, y_train::Union{Void,Array{Float64,1}}=nothing,
@@ -171,7 +172,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
     
     println("\nRunning Eval.mnist_boost with seed $seed on $(gdopt.name) with $(ls.name) and batchsize $batchsize...")
     srand(seed)
-    X_train, y_train, X_test, y_test = _mnist_data(folder, X_train, y_train, X_test, y_test)  # read data
+    X_train, y_train, X_test, y_test = _mnist_data(basefolder*"/"*string(seed), X_train, y_train, X_test, y_test)  # read data
 
     ################
     # ITERATION 1
@@ -246,13 +247,13 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
 
     # conclusion
     df = LsoBase.new_acc()
-    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, folder, "LogReg B1",
+    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, basefolder, "LogReg B1",
                       size(X_train1)[1], acc_train1, acc_test1, time1,   iterrate1)
-    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, folder, "LogReg B2",
+    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, basefolder, "LogReg B2",
                       size(X_train2)[1], acc_train2, acc_test2, time2,   iterrate2)
-    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, folder, "LogReg B3",
+    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, basefolder, "LogReg B3",
                       size(X_train3)[1], acc_train3, acc_test3, time3,   iterrate3)
-    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, folder, "Boosting B1-3",
+    LsoBase.push_acc!(df, gdopt.name, ls.name, batchsize, seed, basefolder, "Boosting B1-3",
                       numex,             acc_train,  acc_test,  timesum, iterrate)
     println(string(df), "\n")
 
@@ -265,7 +266,7 @@ function mnist_boost(gdopt::GdOptimizer, ls::LineSearch, folder::ASCIIString="se
 
     # plotting and storage
     if storage
-        filename = "./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
+        filename = "./results/$basefolder/$seed/boost_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(ls.name)"
         LsoBase.store(inf, filename * ".csv")
         Plotting.draw_plot(Plotting.plot_inf(inf, assumedgrad, maxtime=3*maxtime), filename * ".pdf")
     end
