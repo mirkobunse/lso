@@ -1,4 +1,4 @@
-"""
+ """
     logreg(X, y)
 
     Objective function of Logistic Regression on data matrix X and label vector y.
@@ -19,6 +19,9 @@ function _logreg_f(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1}
     end
     if length(b) == 0
         return sum( log(1 + exp(-y .* X*w)) )[1] / length(y) + reg
+    elseif length(b) == 1   # yes, some machines (or julia versions?) require that
+        i = b[1]
+        return sum( log(1 + exp(-y[i] .* X[i,:]*w)) )[1] + reg
     else
         return sum( log(1 + exp(-y[b] .* X[b,:]*w)) )[1] / length(b) + reg
     end
@@ -32,6 +35,9 @@ function _logreg_g(X::Array{Float64,2}, y::Array{Float64,1}, w::Array{Float64,1}
     end
     if length(b) == 0
         return - vec(sum( (y ./ (1 + exp(y .* X*w))) .* X , 1)) ./ length(y) .+ reg
+    elseif length(b) == 1   # yes, some machines (or julia versions?) require that
+        i = b[1]
+        return - vec(sum( (y[i] ./ (1 + exp(y[i] .* X[i,:]*w))) .* X[i,:] , 1)) .+ reg
     else
         return - vec(sum( (y[b] ./ (1 + exp(y[b] .* X[b,:]*w))) .* X[b,:] , 1)) ./ length(b) .+ reg
     end
