@@ -53,11 +53,11 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
 
     # iteration printer
     expiter = 0
-    printiter() = println("\n", repeat("-", 25),
-                          " Finished iteration $(expiter += 1), ",
-                          "still $((numexperiments-expiter)) ",
-                          "($(floor((numexperiments-expiter)/12)/10)hrs) to go ",
-                          repeat("-", 25), "\n")
+    printiter(add::Int) = println("\n", repeat("-", 25),
+                                  " Finished iteration $(expiter += add), ",
+                                  "still $((numexperiments-expiter)) ",
+                                  "($(floor((numexperiments-expiter)/12)/10)hrs) to go ",
+                                  repeat("-", 25), "\n")
 
     # go for it
     for seed in seeds
@@ -73,7 +73,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                     warn(e)
                     writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
                 end
-                printiter()
+                printiter(1)
 
                 try
                     df = vcat(df, mnist_boost(gdopt, Ls.bt(), folder, seed,
@@ -83,7 +83,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                     warn(e)
                     writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.bt().name).dlm", string(e))
                 end
-                printiter()
+                printiter(3) # boosting has 3 iterations
             end
 
             for batchsize in batchsizes
@@ -100,7 +100,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                     warn(e)
                     writedlm("./results/$folder/$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
                 end
-                printiter()
+                printiter(1)
 
                 try
                     df = vcat(df, mnist_boost(gdopt, Ls.sbt(), folder, seed, batchsize=batchsize, ϵ=ϵ,
@@ -110,7 +110,7 @@ function mnist_massive(folder::ASCIIString="seven_vs_all")
                     warn(e)
                     writedlm("./results/$folder/boost_$(seed)_$(gdopt.name)$((batchsize>0)?batchsize:"")_$(Ls.sbt().name).dlm", string(e))
                 end
-                printiter()
+                printiter(3) # boosting has 3 iterations
             end
 
         end
