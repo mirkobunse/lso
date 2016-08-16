@@ -26,10 +26,10 @@ mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last, ϵ=0.0) =
 
 
 """
-    mnist_massive()
+    mnist_massive([basefolder; seeds, gdopts, batchsizes])
 
     Massive evaluation using all of the optimizers with different parameters and seeds.
-    This may run up to 12hrs.
+    In default configuration, this may run up to 11hrs.
 """
 function mnist_massive(basefolder::ASCIIString="seven_vs_all";
                        seeds::UnitRange{Int}      = 1337:(1337+9),
