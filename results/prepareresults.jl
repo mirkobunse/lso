@@ -52,3 +52,31 @@ function prepareresults(folder::ASCIIString="./seven_vs_all")
     return df
 
 end
+
+function latex(df::DataFrame)
+
+    _format(v::Real)           = @sprintf "%.3f" v
+    _format(v::Int)            = @sprintf "%d"   v
+    _format(v::AbstractString) = replace(v, "_", "")
+    _format(v::Symbol)         = replace(string(v), "_", "")
+
+    println("\\documentclass[margin={10pt 10pt 10pt 10pt}]{standalone}")
+    println("\\usepackage[utf8]{inputenc}")
+    println("\\usepackage{color}")
+    println("\\usepackage{amsmath}")
+    println("\\usepackage{booktabs}\n")
+    println("\\begin{document}\n")
+
+    println("\\begin{tabular}{",
+            apply(string, map(n->"l", names(df))), "}")
+    println("    ", join(map(n->_format(n), names(df)), " & "), " \\\\")
+    println("    \\midrule")
+    for r = eachrow(df)
+        println("    ", join(map(n->_format(r[n]), names(r)), " & "), " \\\\")
+    end
+    println("    \\bottomrule")
+    println("\\end{tabular}")
+
+    println("\n\\end{document}")
+
+end
