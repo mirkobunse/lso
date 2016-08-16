@@ -31,19 +31,29 @@ mnist_svrg_boost(; batchsize=10, estiter=10, strategy=:last, ϵ=0.0) =
     Massive evaluation using all of the optimizers with different parameters and seeds.
     This may run up to 12hrs.
 """
-function mnist_massive(basefolder::ASCIIString="seven_vs_all")
+function mnist_massive(basefolder::ASCIIString="seven_vs_all";
+                       seeds::UnitRange{Int}      = 1337:(1337+9),
+                       gdopts::Array{GdOptimizer} = [GdOpt.gd(), GdOpt.sgd(),
+                                                     GdOpt.svrg(5, :last),  GdOpt.svrg(5, :avg),
+                                                     GdOpt.svrg(10, :last), GdOpt.svrg(10, :avg),
+                                                     GdOpt.svrg(25, :last), GdOpt.svrg(25, :avg)],
+                       batchsizes::Array{Int,1}   = [1, 10, 25, 100])
+    
+    println("\nSeeds:       $seeds")
+    println("Optimizers:  ", join([gdopt.name for gdopt in gdopts], ", "))
+    println("Batch sizes: ", join(batchsizes, ", "))
 
-    # collect experiments
-    seeds  = 1337:(1337+9)  # try 10 seeds
-    gdopts = [GdOpt.gd(), GdOpt.sgd(),
-              GdOpt.svrg(5, :last),  GdOpt.svrg(5, :avg),
-              GdOpt.svrg(10, :last), GdOpt.svrg(10, :avg),
-              GdOpt.svrg(25, :last), GdOpt.svrg(25, :avg)]
-    batchsizes = [1, 10, 25, 100]
+    gdcontained = false
+    for gdopt in gdopts
+        if gdopt.name == GdOpt.gd().name
+            gdcontained = true
+            break
+        end
+    end
 
     # let user confirm his madness
-    numexperiments = length(seeds) * (length(gdopts)+1) * length(batchsizes) * 4
-    print("\nThis will run $numexperiments experiments, ",
+    numexperiments = length(seeds) * length(gdopts) * length(batchsizes) * 4 + gdcontained * length(seeds) * 4
+    print("\nThis results in $numexperiments experiments, ",
           "that may last up to $(numexperiments/120)hrs and use up to $(numexperiments*6)MB of storage.\nPlease confirm: y/N? ")
     if !startswith(readline(STDIN), "y")
         return nothing
@@ -54,7 +64,7 @@ function mnist_massive(basefolder::ASCIIString="seven_vs_all")
     printiter(add::Int) = println("\n", repeat("-", 25),
                                   " Finished iteration $(expiter += add), ",
                                   "still $((numexperiments-expiter)) ",
-                                  "($(floor((numexperiments-expiter)/12)/10)hrs) to go ",
+                                  "($(floor((numexperiments-expiter)/6)/20)hrs) to go ",
                                   repeat("-", 25), "\n")
 
     # go for it
